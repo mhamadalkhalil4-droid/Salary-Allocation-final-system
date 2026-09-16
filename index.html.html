@@ -1,0 +1,1798 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Payroll Manager · Salary Allocation</title>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+
+  :root{
+    --ink:#171a1f;
+    --ink-soft:#565D6D;
+    --border:#dee1e6;
+    --accent:#636AE8;
+    --accent-wash:rgba(99,106,232,.1);
+    --topbar:#f2f2fd;
+    --sidebar:#f8f9fa;
+    --thead:#f3f4f6;
+    --green-bg:#e3f9ec;
+    --green-ink:#0d7a3f;
+    --amber-bg:#fef3d6;
+    --amber-ink:#92620a;
+    --red:#c0392b;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:'Inter',-apple-system,sans-serif;color:var(--ink);background:#fff;font-size:14px;}
+  .archivo{font-family:'Archivo',sans-serif;}
+
+  .topbar{height:64px;background:var(--topbar);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;}
+  .logo{font-size:26px;font-weight:800;line-height:1;}
+  .logo .cc{color:#F5A623;}
+  .logo .maids{color:#3D4FC4;}
+  .tagline{font-size:11px;font-weight:500;line-height:1.3;margin-top:2px;}
+  .tagline .p1{color:#3D4FC4;}
+  .tagline .p2{color:#F5A623;}
+  .topbar-right{display:flex;align-items:center;gap:16px;color:var(--ink-soft);font-weight:500;font-size:14px;}
+  .topbar-item{display:flex;align-items:center;gap:6px;}
+  .vdiv{width:1px;height:20px;background:var(--border);}
+  .bell-btn{position:relative;width:36px;height:36px;border-radius:6px;display:flex;align-items:center;justify-content:center;background:none;border:none;cursor:pointer;}
+  .bell-btn:hover{background:rgba(0,0,0,.05);}
+  .bell-dot{position:absolute;top:4px;right:4px;background:#de3b40;color:#fff;font-size:9px;font-weight:600;border-radius:999px;width:14px;height:14px;display:flex;align-items:center;justify-content:center;}
+  .avatar{position:relative;width:32px;height:32px;border-radius:999px;background:#f4e3ff;color:#7c3aed;font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center;}
+  .avatar-dot{position:absolute;bottom:0;right:0;width:8px;height:8px;border-radius:999px;background:#1dd75b;border:2px solid #fff;}
+
+  .layout{display:flex;}
+  .sidebar{width:64px;background:var(--sidebar);border-right:1px solid var(--border);display:flex;flex-direction:column;align-items:center;padding:12px 0;gap:4px;min-height:calc(100vh - 64px);}
+  .side-btn{width:40px;height:40px;border-radius:6px;display:flex;align-items:center;justify-content:center;background:none;border:none;cursor:pointer;color:#323842;}
+  .side-btn:hover{background:rgba(0,0,0,.05);}
+  .side-btn.active{background:var(--accent-wash);color:var(--accent);}
+  .main{flex:1;min-width:0;}
+
+  .breadcrumb{display:flex;align-items:center;gap:8px;padding:20px 32px;border-bottom:1px solid var(--border);font-size:14px;}
+  .breadcrumb .sep{color:var(--ink-soft);}
+  .breadcrumb .current{font-weight:500;}
+
+  .tabs{display:flex;align-items:center;gap:4px;padding:0 32px;border-bottom:1px solid var(--border);overflow-x:auto;}
+  .salloc-subtabs{display:flex;align-items:center;gap:28px;padding:14px 32px 0;border-bottom:1px solid var(--border);}
+  .salloc-subtab{display:inline-block;padding:0 0 14px;color:var(--ink-soft);font-size:14px;font-weight:600;text-decoration:none;border-bottom:2px solid transparent;}
+  .salloc-subtab:hover{color:var(--ink);}
+  .salloc-subtab.active{color:var(--accent);border-bottom-color:var(--accent);}
+  .tab{display:flex;align-items:center;gap:8px;padding:12px 16px;color:var(--ink-soft);font-size:14px;cursor:pointer;white-space:nowrap;}
+  .tab:hover{color:var(--ink);}
+  .tab.active{position:relative;background:var(--accent-wash);border-radius:6px 6px 0 0;color:var(--accent);font-weight:600;}
+  .tab.active::after{content:'';position:absolute;left:0;right:0;bottom:-1px;height:2px;background:var(--accent);}
+  .badge{display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:22px;padding:0 8px;border-radius:999px;font-size:12px;font-weight:600;background:var(--thead);color:var(--ink);}
+  .badge.on-accent{background:var(--accent);color:#fff;}
+
+  .content{padding:24px 32px;}
+  .page{display:none;}
+  .page.active{display:block;}
+  .info-strip{font-size:14px;color:var(--ink-soft);margin:0;}
+  .info-strip b{color:var(--ink);}
+  .info-strip .warn{color:var(--amber-ink);font-weight:600;}
+  .content-header{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:20px;flex-wrap:wrap;}
+  .btn-export{display:inline-flex;align-items:center;gap:8px;flex:none;}
+
+  .filter-card{border:1px solid var(--border);border-radius:8px;padding:16px;margin-bottom:24px;}
+  .filter-row{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;}
+  .field{display:flex;flex-direction:column;gap:4px;}
+  .field label{font-size:12px;color:var(--ink-soft);}
+  .field input, .field select{height:40px;padding:0 12px;border:1px solid var(--border);border-radius:6px;font-size:14px;font-family:inherit;color:var(--ink);background:#fff;}
+  .field input::placeholder{color:#8b90a3;}
+  .field input:focus, .field select:focus{outline:2px solid var(--accent-wash);border-color:var(--accent);}
+  .field.grow{flex:1;min-width:220px;}
+  .field.w200{width:200px;}
+  .field.w180{width:180px;}
+  .btn{height:40px;padding:0 16px;border-radius:6px;font-size:14px;font-weight:500;font-family:inherit;cursor:pointer;}
+  .btn-outline{background:#fff;border:1px solid var(--border);color:var(--ink);}
+  .btn-outline:hover{background:rgba(0,0,0,.03);}
+  .btn-solid{background:var(--accent);border:1px solid var(--accent);color:#fff;}
+  .btn-solid:hover{background:#5459d1;}
+  .btn-solid:disabled{background:#c7c9f5;border-color:#c7c9f5;cursor:not-allowed;}
+  .btn-sm{height:36px;padding:0 14px;font-size:14px;}
+
+  .table-card{border:1px solid var(--border);border-radius:8px;overflow:hidden;}
+  table{width:100%;border-collapse:collapse;font-size:14px;}
+  thead tr{background:var(--thead);}
+  th{text-align:left;padding:10px 16px;font-size:12px;font-weight:600;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.03em;}
+  td{padding:12px 16px;vertical-align:top;border-top:1px solid var(--border);}
+  tbody tr.data-row:hover{background:rgba(0,0,0,.012);}
+  .link-btn{background:none;border:none;padding:0;color:var(--accent);font-weight:500;font-size:14px;cursor:pointer;font-family:inherit;}
+  .link-btn:hover{text-decoration:underline;}
+  .emp-cell{display:flex;align-items:center;gap:12px;}
+  .emp-avatar{width:32px;height:32px;border-radius:999px;background:#f4e3ff;color:#7c3aed;font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center;flex:none;}
+  .emp-name{font-weight:500;}
+  .terminated-badge{display:inline-block;font-size:10.5px;font-weight:700;color:#92400d;background:#fef3d6;padding:2px 8px;border-radius:999px;margin-left:6px;vertical-align:middle;}
+  .emp-sub{font-size:12px;color:var(--ink-soft);}
+  .split-line{line-height:1.6;}
+  .split-line .pct{color:var(--ink-soft);}
+
+  tr.row-detail{display:none;background:#fafafb;}
+  tr.row-detail.open{display:table-row;}
+  .edit-title{font-size:13px;font-weight:600;margin-bottom:12px;}
+  .edit-fields{display:flex;flex-wrap:wrap;gap:16px;align-items:flex-end;margin-bottom:12px;}
+  .edit-field label{display:block;font-size:12px;color:var(--ink-soft);margin-bottom:4px;}
+  .split-input{width:72px;height:36px;text-align:right;border:1px solid var(--border);border-radius:6px;padding:0 8px;font-size:14px;font-family:inherit;}
+  .split-input:focus{outline:2px solid var(--accent-wash);border-color:var(--accent);}
+  .pct-suffix{margin-left:6px;color:var(--ink-soft);}
+  .total-line{font-size:13px;color:var(--ink-soft);padding-bottom:8px;}
+  .total-value{font-size:14px;font-weight:600;margin-left:4px;}
+  .edit-actions{display:flex;align-items:center;gap:12px;}
+  .edit-hint{font-size:12px;color:var(--ink-soft);}
+
+  .table-footer{display:flex;align-items:center;justify-content:space-between;margin-top:16px;font-size:13px;color:var(--ink-soft);}
+  .table-footer b{color:var(--ink);font-weight:500;}
+  .pager{display:flex;align-items:center;gap:8px;}
+  .pager button{height:32px;padding:0 12px;border:1px solid var(--border);border-radius:6px;background:#fff;font-size:13px;font-family:inherit;cursor:pointer;color:var(--ink);}
+  .pager button:disabled{opacity:.5;cursor:not-allowed;}
+
+page{display:none;}
+
+
+  table{width:100%;border-collapse:collapse;font-size:14px;}
+  thead tr{background:var(--thead);}
+  th{text-align:left;padding:10px 16px;font-size:12px;font-weight:600;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.03em;}
+  td{padding:12px 16px;vertical-align:top;border-top:1px solid var(--border);}
+  tbody tr.data-row:hover{background:rgba(0,0,0,.012);}
+
+  tr  tr  .edit-field label{display:block;font-size:12px;color:var(--ink-soft);margin-bottom:4px;}
+
+  /* Departments Allocation in Buckets */
+  .hj-list{display:flex;flex-direction:column;gap:18px;}
+  .hj-card{border:1px solid var(--border);border-radius:10px;background:#fff;overflow:hidden;}
+  .hj-card.row-confirmed{background:#fafbff;}
+  .hj-card-head{display:flex;align-items:center;gap:14px;padding:16px 18px;border-bottom:1px solid var(--border);flex-wrap:wrap;}
+  .hj-card-head .hj-name{font-weight:700;font-size:15px;color:var(--ink);}
+  .hj-card-head .hj-pil{font-size:12.5px;color:var(--ink-soft);margin-top:1px;}
+  .hj-card-head .hj-spacer{flex:1;}
+  .hj-total-pill{font-size:13px;font-weight:700;padding:5px 12px;border-radius:999px;white-space:nowrap;}
+  .hj-total-pill.ok{color:var(--green-ink);background:var(--green-bg);}
+  .hj-total-pill.bad{color:var(--red);background:#fdeaea;}
+  .hj-groups{display:flex;flex-wrap:wrap;gap:14px;padding:18px;}
+  .hj-group{border:1px solid var(--border);border-radius:10px;padding:12px 14px;background:#fafbff;min-width:170px;flex:1 1 170px;}
+  .hj-group.type-single{min-width:150px;flex:1 1 150px;}
+  .hj-group-title{font-size:11px;font-weight:700;color:var(--ink-soft);letter-spacing:.01em;margin-bottom:10px;}
+  .hj-subcols{display:flex;gap:12px;}
+  .hj-subcol{flex:1;min-width:0;}
+  .hj-subcol-label{font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;padding:4px 0;text-align:center;border-radius:6px;margin-bottom:8px;}
+  .hj-subcol-label.client{background:#dbeafe;color:#1e40af;}
+  .hj-subcol-label.maid{background:#f3e8ff;color:#7c2d92;}
+  .hj-bucket-row{display:flex;flex-direction:column;gap:4px;padding:6px 0;}
+  .hj-bucket-row label{font-size:12.5px;color:var(--ink-soft);}
+  .hj-bucket-row .bucket-input{display:flex;align-items:center;gap:4px;}
+  .hj-bucket-row input{width:100%;border:1px solid #cbd5e1;border-radius:6px;padding:6px 7px;font-size:13.5px;text-align:right;font-family:inherit;color:var(--ink);}
+  .hj-bucket-row .pct{font-size:12px;color:#8b90a3;flex:none;}
+  .hj-card.row-confirmed .hj-bucket-row{color:#8b90a3;}
+  .hj-card.row-confirmed .hj-bucket-row label{color:#8b90a3;}
+  .hj-card.row-confirmed .hj-subcol-label.client{background:#eef2f9;color:#8b90a3;}
+  .hj-card.row-confirmed .hj-subcol-label.maid{background:#eef2f9;color:#8b90a3;}
+  .hj-confirmed-value{font-size:13.5px;color:#8b90a3;font-variant-numeric:tabular-nums;}
+  .confirmed-badge{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:700;color:var(--green-ink);background:var(--green-bg);padding:6px 13px;border-radius:999px;white-space:nowrap;}
+  .edit-again-link{font-size:12.5px;color:var(--accent);cursor:pointer;margin-left:8px;text-decoration:underline;white-space:nowrap;}
+
+  .inner-tabs{display:flex;align-items:center;gap:24px;border-bottom:1px solid var(--border);margin-bottom:20px;}
+  .inner-tab{padding:0 0 12px;font-size:14px;font-weight:600;color:var(--ink-soft);cursor:pointer;border-bottom:2px solid transparent;display:flex;align-items:center;gap:8px;}
+  .inner-tab:hover{color:var(--ink);}
+  .inner-tab.active{color:var(--accent);border-bottom-color:var(--accent);}
+  .inner-page{display:none;}
+  .inner-page.active{display:block;}
+  .subpage-note{font-size:13px;color:var(--ink-soft);line-height:1.6;max-width:100ch;margin:0 0 18px;}
+
+  .ff-toolbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+  .modal-backdrop{display:none;position:fixed;inset:0;background:rgba(14,23,42,.45);z-index:200;align-items:center;justify-content:center;}
+  .modal-backdrop.show{display:flex;}
+  .modal-box-lg{background:#fff;border-radius:16px;padding:24px;width:640px;max-width:92vw;max-height:82vh;overflow-y:auto;box-shadow:0 20px 60px rgba(14,23,42,.25);}
+  .modal-title-lg{font-size:16px;font-weight:800;color:var(--ink);margin-bottom:6px;}
+  .modal-sub-lg{font-size:12.5px;color:var(--ink-soft);margin-bottom:16px;line-height:1.5;}
+  .query-row{border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:10px;}
+  .query-row-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
+  .query-row-name{font-weight:700;font-size:13.5px;}
+  .query-row-depts{font-size:11.5px;color:#8b90a3;margin-bottom:8px;}
+  .query-sql-box{background:#0e172a;color:#d7dce6;border-radius:8px;padding:10px 12px;font-family:'SF Mono',Consolas,monospace;font-size:11.5px;white-space:pre-wrap;max-height:110px;overflow-y:auto;}
+  .upload-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-top:1px solid var(--border);}
+  .upload-row:first-child{border-top:none;}
+  .upload-row-name{flex:1;font-size:13.5px;font-weight:600;}
+  .upload-row-status{font-size:12px;color:#8b90a3;}
+  .upload-row-status.done{color:var(--green-ink);}
+  .dept-info-panel{display:flex;flex-direction:column;gap:8px;margin:14px 0;padding:14px 16px;background:#fafbff;border-radius:10px;border:1px solid var(--border);}
+  .dept-info-row{display:flex;gap:12px;align-items:baseline;}
+  .dept-info-label{flex:none;width:80px;font-size:11px;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.03em;}
+  .dept-info-value{font-size:13px;color:var(--ink);line-height:1.5;}
+  .ff-toolbar-note{font-size:12.5px;color:#8b90a3;}
+  .source-tag{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;padding:3px 9px;border-radius:999px;white-space:nowrap;}
+  .source-tag.system{background:#e0f2fe;color:#075985;}
+  .source-tag.override{background:var(--amber-bg);color:var(--amber-ink);}
+  .source-tag.manual{background:#f1f2f5;color:var(--ink-soft);}
+  .ff-detail-row{background:#fafbff;}
+  .ff-detail-actions{display:flex;align-items:center;gap:10px;padding-top:14px;margin-top:14px;border-top:1px solid var(--border);}
+
+
+info-strip{font-size:14px;color:var(--ink-soft);margin:0;}
+
+
+  table{width:100%;border-collapse:collapse;font-size:14px;}
+  thead tr{background:var(--thead);}
+  th{text-align:left;padding:10px 16px;font-size:12px;font-weight:600;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.03em;}
+  td{padding:12px 16px;vertical-align:top;border-top:1px solid var(--border);}
+  tbody tr
+  tr  tr  .edit-field label{display:block;font-size:12px;color:var(--ink-soft);margin-bottom:4px;}
+
+  /* Results screen */
+  .run-bar{display:flex;align-items:center;gap:14px;background:#fff;border:1px solid var(--border);border-radius:12px;padding:16px 20px;margin-bottom:22px;flex-wrap:wrap;}
+  .run-bar label{font-size:12px;color:var(--ink-soft);font-weight:600;}
+  .run-bar select{height:40px;border:1px solid var(--border);border-radius:8px;padding:0 12px;font-size:14px;font-family:inherit;color:var(--ink);background:#fff;}
+  .run-bar .spacer{flex:1;}
+  .run-bar .run-status{font-size:12.5px;color:var(--ink-soft);}
+
+  .cat-tabs{display:flex;align-items:center;gap:22px;border-bottom:1px solid var(--border);margin-bottom:20px;flex-wrap:wrap;}
+
+  .txn-section{border:1px solid var(--border);border-radius:12px;background:#fff;margin-bottom:26px;overflow:hidden;}
+  .txn-head{display:flex;align-items:center;gap:10px;padding:14px 18px;cursor:pointer;user-select:none;}
+  .txn-head .chev{transition:transform .15s ease;color:var(--ink-soft);}
+  .txn-head.open .chev{transform:rotate(90deg);}
+  .txn-head-title{font-size:14px;font-weight:700;color:var(--ink);}
+  .txn-head-count{font-size:12px;color:var(--ink-soft);font-weight:500;}
+  .txn-body{display:none;border-top:1px solid var(--border);padding:6px 0;}
+  .txn-body.open{display:block;}
+  .txn-subgroup-title{font-size:11.5px;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.03em;padding:12px 18px 6px;}
+  .txn-row{display:flex;align-items:flex-start;gap:12px;padding:10px 18px;border-top:1px solid #f1f2f5;}
+  .txn-row:first-of-type{border-top:none;}
+  .txn-line{flex:1;font-size:13px;color:var(--ink);font-variant-numeric:tabular-nums;}
+  .txn-bucket-name{font-family:'Archivo',sans-serif;font-weight:800;color:var(--accent);letter-spacing:.01em;}
+  .txn-copy-btn{flex:none;height:28px;padding:0 10px;border:1px solid var(--border);border-radius:7px;background:#fff;color:var(--ink-soft);font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:5px;}
+  .txn-copy-btn:hover{background:#f5f5fb;color:var(--ink);}
+  .txn-copy-btn.copied{color:var(--green-ink);border-color:var(--green-bg);background:var(--green-bg);}
+  .txn-empty{padding:16px 18px;font-size:13px;color:var(--ink-soft);}
+  .cat-tab{padding:0 0 12px;font-size:13.5px;font-weight:600;color:var(--ink-soft);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;}
+  .cat-tab:hover{color:var(--ink);}
+  .cat-tab.active{color:var(--accent);border-bottom-color:var(--accent);}
+
+  .kpi-row{display:flex;gap:14px;margin-bottom:22px;flex-wrap:wrap;}
+  .kpi-card{flex:1;min-width:170px;background:#fff;border:1px solid var(--border);border-radius:12px;padding:16px 18px;}
+  .kpi-label{font-size:11.5px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.03em;font-weight:700;margin-bottom:6px;}
+  .kpi-value{font-size:22px;font-weight:800;color:var(--ink);}
+  .kpi-sub{font-size:12px;color:#8b90a3;margin-top:2px;}
+
+  .result-section-title{font-size:14px;font-weight:700;color:var(--ink);margin:26px 0 12px;}
+  .num-cell{text-align:right;font-variant-numeric:tabular-nums;}
+  .recon-table td.num-cell, .recon-table th.num-cell{text-align:right;}
+  .recon-diff-row td{font-weight:800;border-top:2px solid var(--ink);}
+  .recon-diff-row.ok td{color:var(--green-ink);}
+  .recon-diff-row.bad td{color:var(--red);}
+
+
+page{display:none;}
+
+
+  table{width:100%;border-collapse:collapse;font-size:14px;}
+  thead tr{background:var(--thead);}
+  th{text-align:left;padding:10px 16px;font-size:12px;font-weight:600;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.03em;}
+  td{padding:12px 16px;vertical-align:top;border-top:1px solid var(--border);}
+  tbody tr  .link-btn{background:none;border:none;padding:0;color:var(--accent);font-weight:500;font-size:14px;cursor:pointer;font-family:inherit;}
+
+  tr  tr  .edit-field label{display:block;font-size:12px;color:var(--ink-soft);margin-bottom:4px;}
+
+  /* Configuration screen */
+  .cfg-section{background:#fff;border:1px solid var(--border);border-radius:12px;margin-bottom:22px;overflow:hidden;}
+  .cfg-section-head{padding:16px 20px;border-bottom:1px solid var(--border);}
+  .cfg-section-title{font-size:15px;font-weight:700;color:var(--ink);}
+  .cfg-section-sub{font-size:12.5px;color:var(--ink-soft);margin-top:3px;}
+  .cfg-body{padding:18px 20px;}
+  .cfg-row{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;padding:12px 0;border-top:1px solid var(--border);}
+  .cfg-row:first-child{border-top:none;padding-top:0;}
+  .cfg-row-label{font-size:13.5px;font-weight:600;color:var(--ink);max-width:60%;}
+  .cfg-row-desc{font-size:12px;color:var(--ink-soft);margin-top:3px;font-weight:400;}
+  .cfg-row-control{flex:none;display:flex;align-items:center;gap:8px;}
+  .cfg-input{height:36px;border:1px solid var(--border);border-radius:8px;padding:0 10px;font-size:13.5px;font-family:inherit;color:var(--ink);width:140px;}
+  .cfg-input.wide{width:260px;}
+  .cfg-select{height:36px;border:1px solid var(--border);border-radius:8px;padding:0 10px;font-size:13.5px;font-family:inherit;color:var(--ink);background:#fff;width:200px;}
+  .cfg-chip-list{display:flex;flex-wrap:wrap;gap:6px;max-width:420px;justify-content:flex-end;}
+  .cfg-chip{display:inline-flex;align-items:center;gap:6px;background:var(--accent-wash);color:var(--accent);font-size:12px;font-weight:700;padding:5px 10px;border-radius:999px;}
+  .cfg-chip button{background:none;border:none;color:var(--accent);cursor:pointer;font-size:13px;line-height:1;padding:0;}
+  .cfg-chip.excluded{background:#fdeaea;color:var(--red);}
+  .cfg-add-btn{font-size:12.5px;color:var(--accent);background:none;border:1px dashed var(--accent-wash);border-radius:999px;padding:5px 12px;cursor:pointer;}
+  .cfg-save-bar{position:sticky;bottom:0;background:#fff;border-top:1px solid var(--border);padding:14px 20px;display:flex;justify-content:flex-end;gap:10px;margin:0 -32px -40px;}
+
+
+  .mega-page{display:none;}
+  .mega-page.active{display:block;}
+
+</style>
+</head>
+
+
+<div class="topbar">
+  <div>
+    <div class="logo"><span class="maids">maids</span><span class="cc">.cc</span></div>
+    <div class="tagline"><span class="p1">+</span> nannies <span class="p2">+</span> visa services</div>
+  </div>
+  <div class="topbar-right archivo">
+    <div class="topbar-item">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      2:30 PM Dubai Time
+    </div>
+    <div class="vdiv"></div>
+    <div class="topbar-item">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      January 1, 2026
+    </div>
+    <div class="vdiv"></div>
+    <div>Hi, Omar</div>
+    <button class="bell-btn">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#171a1f" stroke-width="2"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      <span class="bell-dot">3</span>
+    </button>
+    <div class="avatar">OY<span class="avatar-dot"></span></div>
+  </div>
+</div>
+
+<div class="layout">
+  <div class="sidebar">
+    <button class="side-btn">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    </button>
+    <button class="side-btn">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+    </button>
+    <button class="side-btn">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+    </button>
+    <button class="side-btn active">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="8" y="2" width="14" height="14" rx="2"/><path d="M4 8v12a2 2 0 0 0 2 2h12"/></svg>
+    </button>
+    <button class="side-btn">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+    </button>
+    <button class="side-btn">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+    </button>
+  </div>
+
+  <div class="main">
+    <div class="breadcrumb">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#636AE8" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      <span class="sep">/</span>
+      <span class="current">Payroll Manager</span>
+    </div>
+
+    <div class="tabs">
+      <div class="tab">Office Staff Management <span class="badge">47</span></div>
+      <div class="tab">Audit <span class="badge">3</span></div>
+      <div class="tab">Bank Transfers <span class="badge">34</span></div>
+      <div class="tab">Bank Statement Parsing <span class="badge">1</span></div>
+      <div class="tab">Transactions</div>
+      <div class="tab active">Salary Allocation</div>
+      <div class="tab">Configurations</div>
+    </div>
+
+        <div class="salloc-subtabs">
+      <div class="salloc-subtab active" id="megatab-timesplit" onclick="showMegaPage('timesplit')">Department Time Split</div>
+      <div class="salloc-subtab" id="megatab-buckets" onclick="showMegaPage('buckets')">Departments Allocation in Buckets</div>
+      <div class="salloc-subtab" id="megatab-results" onclick="showMegaPage('results')">Results</div>
+      <div class="salloc-subtab" id="megatab-config" onclick="showMegaPage('config')">Configuration</div>
+    </div>
+
+    <div class="content">
+      <div class="mega-page active" id="megapage-timesplit">
+
+
+      <div class="page active" id="page-timesplit">
+        <div class="content-header" style="justify-content:flex-end;">
+          <button class="btn btn-solid btn-export" onclick="exportCsv()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Export to CSV
+          </button>
+        </div>
+
+        <div class="filter-card">
+          <div class="filter-row">
+            <div class="field grow">
+              <label>Search employee</label>
+              <input type="text" placeholder="Name or email">
+            </div>
+            <div class="field w200">
+              <label>Department</label>
+              <select>
+                <option>All departments</option>
+                <option>CC Live-in L1</option>
+                <option>CC Live-out L1</option>
+                <option>Broadcasting</option>
+                <option>ChatCC</option>
+              </select>
+            </div>
+            <button class="btn btn-outline" onclick="applyFilter();">Reset</button>
+            <button class="btn btn-solid">Search</button>
+          </div>
+        </div>
+
+        <div class="table-card">
+          <table>
+            <thead>
+              <tr>
+                <th style="width:90px;">Actions</th>
+                <th>Employee</th>
+                <th>Departments &amp; split</th>
+                <th style="width:190px;">Job Title</th>
+                <th style="width:130px;">Last update date</th>
+              </tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+          </table>
+        </div>
+
+        <div class="table-footer">
+          <div>Showing <b>1–10</b> of <b>113</b></div>
+          <div class="pager">
+            <button disabled>Previous</button>
+            <button>Next</button>
+          </div>
+        </div>
+      </div>
+
+    
+      </div>
+
+      <div class="mega-page" id="megapage-buckets">
+
+      <div class="inner-tabs">
+        <div class="inner-tab active" id="innertab-hj" onclick="showInner('hj')">Human Judgment <span class="badge">6</span></div>
+        <div class="inner-tab" id="innertab-ff" onclick="showInner('ff')">Fixed Formulas <span class="badge">59</span></div>
+      </div>
+
+      <div class="inner-page active" id="innerpage-hj">
+        <p class="subpage-note">These 6 departments set their own product/cost split by hand — there's no automated formula for them. Edit any bucket directly and confirm whenever it's ready; this is the permanent source used by the Results calculation, not a monthly approval queue that clears itself.</p>
+        <div class="hj-list" id="hjBody"></div>
+      </div>
+
+      <div class="inner-page" id="innerpage-ff">
+        <p class="subpage-note">These 59 departments don't set their own split by hand — each row is either computed from a driver (a measured ratio) via a stored allocation method, or is a known-correct value not yet linked to a live driver. 8 of the 16 drivers are backed by a real query; export them, run them in Snowflake, and upload each result under its own name — every department that names that driver recomputes. You can still override any department by hand; overridden departments won't be touched by the next result upload until reverted.</p>
+        <div class="ff-toolbar">
+          <span class="ff-toolbar-note" id="ffCount">Showing 1–59 of 59</span>
+          <div style="display:flex;gap:10px;">
+            <button class="btn btn-outline" onclick="openQueriesModal()">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Export Queries
+            </button>
+            <button class="btn btn-solid" onclick="openUploadModal()">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              Upload Results
+            </button>
+          </div>
+        </div>
+        <div class="table-card">
+          <table>
+            <thead>
+              <tr>
+                <th>Department</th>
+                <th style="width:170px;">Split Source</th>
+                <th style="width:130px;">Last Updated</th>
+                <th style="width:100px;">Total</th>
+                <th style="width:90px;">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="ffBody"></tbody>
+          </table>
+        </div>
+        <div class="table-footer">
+          <div>Showing <b>1–59</b> of <b>59</b></div>
+          <div class="pager">
+            <button disabled>Previous</button>
+            <button disabled>Next</button>
+          </div>
+        </div>
+      </div>
+    
+      </div>
+
+      <div class="mega-page" id="megapage-results">
+
+      <div class="run-bar">
+        <div>
+          <label>Payroll month</label><br>
+          <select id="monthSelect">
+            <option value="2026-10" selected>October 2026 (payroll closed)</option>
+            <option value="2026-09">September 2026</option>
+            <option value="2026-08">August 2026</option>
+          </select>
+        </div>
+        <span class="spacer"></span>
+        <span class="run-status" id="runStatus">Last run: not yet run this session</span>
+        <button class="btn btn-solid" onclick="runAlgorithm()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          Run
+        </button>
+      </div>
+
+      <div id="resultsArea" style="display:none;">
+        <div class="cat-tabs">
+          <div class="cat-tab active" data-cat="All" onclick="showCat('All')">All Employees</div>
+          <div class="cat-tab" data-cat="Expat" onclick="showCat('Expat')">Expat</div>
+          <div class="cat-tab" data-cat="Overseas - Bank Transfer" onclick="showCat('Overseas - Bank Transfer')">Overseas – Bank Transfer</div>
+          <div class="cat-tab" data-cat="Overseas - International Transfer" onclick="showCat('Overseas - International Transfer')">Overseas – International Transfer</div>
+          <div class="cat-tab" data-cat="Emirati" onclick="showCat('Emirati')">Emirati</div>
+        </div>
+        <div id="catBody"></div>
+      </div>
+
+      <div id="emptyState" style="text-align:center;padding:60px 20px;color:var(--ink-soft);">
+        <p>Select a payroll month and click <b>Run</b> to calculate the product cost summary.</p>
+      </div>
+    
+      </div>
+
+      <div class="mega-page" id="megapage-config">
+
+      <p class="subpage-note">Everything here controls behavior used across Department Time Split, Departments Allocation in Buckets, and Results — settings that weren't exposed as an editable option anywhere else.</p>
+
+      <div class="cfg-section">
+        <div class="cfg-section-head">
+          <div class="cfg-section-title">Department Classification</div>
+          <div class="cfg-section-sub">Which of the 70 departments are set by hand, computed from OSP query results, or excluded from product allocation entirely. Moving a department here is what moves it between tabs on Departments Allocation in Buckets.</div>
+        </div>
+        <div class="cfg-body">
+          <div class="cfg-row">
+            <div><div class="cfg-row-label">Human Judgment (6)</div><div class="cfg-row-desc">Edited by hand on the Human Judgment tab — never touched by recalculation.</div></div>
+            <div class="cfg-row-control"><div class="cfg-chip-list" id="hjChips"></div></div>
+          </div>
+          <div class="cfg-row">
+            <div><div class="cfg-row-label">Excluded from product allocation (5)</div><div class="cfg-row-desc">Own P&L departments — cost still appears in the Results reconciliation, just never lands in a product bucket.</div></div>
+            <div class="cfg-row-control"><div class="cfg-chip-list" id="exclChips"></div></div>
+          </div>
+          <div class="cfg-row">
+            <div><div class="cfg-row-label">Everything else</div><div class="cfg-row-desc">59 departments, all Fixed Formula by default.</div></div>
+            <div class="cfg-row-control"><span style="font-size:13.5px;color:var(--ink-soft);">59 departments — manage individually on the Fixed Formulas tab</span></div>
+          </div>
+          <div class="cfg-row">
+            <div><div class="cfg-row-label">Reclassify a department</div><div class="cfg-row-desc">Moves it between Human Judgment and Fixed Formula. Moving to Fixed Formula clears any manually-set split until the next query result is uploaded; moving to Human Judgment keeps whatever split it last had.</div></div>
+            <div class="cfg-row-control">
+              <select class="cfg-select" id="reclassifyDept" style="width:220px;"></select>
+              <select class="cfg-select" id="reclassifyTarget" style="width:150px;"><option>Human Judgment</option><option>Fixed Formula</option></select>
+              <button class="btn btn-outline" onclick="applyReclassify()">Apply</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="cfg-section">
+        <div class="cfg-section-head">
+          <div class="cfg-section-title">Fixed-Formula Query Automation</div>
+          <div class="cfg-section-sub">How a Fixed Formula department's bucket split gets updated from OSP query results. The queries themselves are managed on the Fixed Formulas tab (Export Queries / Upload Results) — this is just the cadence and fallback behavior.</div>
+        </div>
+        <div class="cfg-body">
+          <div class="cfg-row">
+            <div><div class="cfg-row-label">Query result reminder</div><div class="cfg-row-desc">Nudge whoever runs the queries if results haven't been uploaded in time for this month's close.</div></div>
+            <div class="cfg-row-control"><select class="cfg-select"><option>Off</option><option selected>3 days before payroll close</option><option>7 days before payroll close</option></select></div>
+          </div>
+          <div class="cfg-row">
+            <div><div class="cfg-row-label">Missing-result fallback</div><div class="cfg-row-desc">What happens if a query's results weren't uploaded before this cycle's calculation runs.</div></div>
+            <div class="cfg-row-control"><select class="cfg-select"><option selected>Keep last known split</option><option>Flag for manual review</option><option>Block the Results run until uploaded</option></select></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="cfg-section">
+        <div class="cfg-section-head">
+          <div class="cfg-section-title">Org Review Confirmation Cycle</div>
+          <div class="cfg-section-sub">Timing used by the self-service portal's monthly confirmation cycle.</div>
+        </div>
+        <div class="cfg-body">
+          <div class="cfg-row">
+            <div><div class="cfg-row-label">Cycle opens</div><div class="cfg-row-desc">Day of the month everyone's Org Review screen becomes editable.</div></div>
+            <div class="cfg-row-control"><input class="cfg-input" type="text" value="25th"></div>
+          </div>
+          <div class="cfg-row">
+            <div><div class="cfg-row-label">Employee grace period</div><div class="cfg-row-desc">Days before a manager gets alerted about that employee.</div></div>
+            <div class="cfg-row-control"><input class="cfg-input" type="text" value="1 day"></div>
+          </div>
+          <div class="cfg-row">
+            <div><div class="cfg-row-label">Company-wide admin digest starts</div><div class="cfg-row-desc">Day the whole-company unconfirmed digest begins.</div></div>
+            <div class="cfg-row-control"><input class="cfg-input" type="text" value="Day 3"></div>
+          </div>
+          <div class="cfg-row">
+            <div><div class="cfg-row-label">Cutoff / auto-confirm</div><div class="cfg-row-desc">Day the cycle closes and anything unconfirmed is auto-confirmed in the portal.</div></div>
+            <div class="cfg-row-control"><input class="cfg-input" type="text" value="1st of next month"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="cfg-section">
+        <div class="cfg-section-head">
+          <div class="cfg-section-title">Department Time Split — Termination Window</div>
+        </div>
+        <div class="cfg-body">
+          <div class="cfg-row">
+            <div><div class="cfg-row-label">Show terminated employees for</div><div class="cfg-row-desc">Only applies to terminated people who were on 2+ departments.</div></div>
+            <div class="cfg-row-control"><input class="cfg-input" type="text" value="45 days"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="cfg-section">
+        <div class="cfg-section-head">
+          <div class="cfg-section-title">Notification Recipients</div>
+          <div class="cfg-section-sub">Who gets the company-wide oversight emails — separate from the employee/manager alerts, which always go to the people involved.</div>
+        </div>
+        <div class="cfg-body">
+          <div class="cfg-row">
+            <div><div class="cfg-row-label">Daily unconfirmed digest (from Day 3)</div></div>
+            <div class="cfg-row-control"><div class="cfg-chip-list" id="digestChips"></div></div>
+          </div>
+          <div class="cfg-row">
+            <div><div class="cfg-row-label">Cycle-closed summary (1st of month)</div></div>
+            <div class="cfg-row-control"><div class="cfg-chip-list" id="closedChips"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="cfg-section">
+        <div class="cfg-section-head">
+          <div class="cfg-section-title">Product Buckets</div>
+          <div class="cfg-section-sub">The 16 buckets every department's split and every Results calculation is built on. Renaming here relabels them everywhere — it does not change any stored percentages. Adding a product or bucket makes it available on every department's split immediately, starting at 0%.</div>
+        </div>
+        <div class="cfg-body">
+          <div class="table-card">
+            <table>
+              <thead><tr><th>Product</th><th>Stage</th><th>Bucket Label</th><th style="width:70px;">Split By</th><th style="width:70px;"></th></tr></thead>
+              <tbody id="bucketRows"></tbody>
+            </table>
+          </div>
+          <div style="margin-top:14px;display:flex;gap:10px;">
+            <button class="btn btn-outline" onclick="openAddBucketModal('product')">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Add Product
+            </button>
+            <button class="btn btn-outline" onclick="openAddBucketModal('bucket')">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Add Bucket to Existing Product
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="cfg-save-bar">
+        <button class="btn btn-outline">Discard Changes</button>
+        <button class="btn btn-solid" onclick="saveConfig()">Save Configuration</button>
+      </div>
+    
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+
+function showMegaPage(name){
+  document.querySelectorAll('.salloc-subtab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.mega-page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('megatab-'+name).classList.add('active');
+  document.getElementById('megapage-'+name).classList.add('active');
+}
+
+/* ===================== Department Time Split ===================== */
+
+// stage: 'confirmed' | 'pending_employee' | 'pending_manager' | 'pending_apil'
+const PEOPLE = [
+  {
+    id:'1', empType:'Expat', status:'Active', name:'Sami Nabil Haddad', email:'sami.haddad@maids.cc', role:'CC Resolver Shadower',
+    manager:'Georgina Khalil Wakim', apil:'Georgina Khalil Wakim',
+    depts:[{name:'CC Live-in L1', pct:82},{name:'CC Live-out L1', pct:18}],
+    stage:'confirmed', lastSurvey:'12 Aug 2026'
+  },
+  {
+    id:'2', empType:'Expat', status:'Active', name:'Rami Fouad Chidiac', email:'rami.chidiac@maids.cc', role:'Accountable Process Improvement Leader',
+    manager:'Mario Andre Gharios', apil:'Mario Andre Gharios',
+    depts:[{name:'Cybersecurity', pct:50},{name:'Jira Administration', pct:25},{name:'Office Staff Payroll', pct:25}],
+    stage:'confirmed', lastSurvey:'03 Aug 2026'
+  },
+  {
+    id:'3', empType:'Overseas \u2013 Bank Transfer', status:'Active', name:'Karim Youssef Matta', email:'karim.matta@maids.cc', role:'Call Agent',
+    manager:'Diana Charif Hamasny', apil:'Diana Charif Hamasny',
+    depts:[{name:'CC Sales', pct:78.4},{name:'MV Sales', pct:19.9},{name:'Travel Assist Sales', pct:1.7}],
+    stage:'confirmed', lastSurvey:'03 Aug 2026'
+  },
+  {
+    id:'4', empType:'Expat', status:'Active', name:'Nadine Elie Sfeir', email:'nadine.sfeir@maids.cc', role:'Accommodation Manager',
+    manager:'Mario Andre Gharios', apil:'Chady Younan',
+    depts:[{name:'Accommodation Management', pct:80},{name:'Maid Onboarding', pct:20}],
+    stage:'pending_apil', lastSurvey:'28 Jul 2026', stageDate:'30 Jul 2026'
+  },
+  {
+    id:'5', empType:'Expat', status:'Active', name:'Walid Antoine Rahme', email:'walid.rahme@maids.cc', role:'Process Improvement Leader',
+    manager:'MHD Amin Mazen Aljebbeh', apil:'MHD Amin Mazen Aljebbeh',
+    depts:[{name:'Broadcasting', pct:50},{name:'ChatCC', pct:20},{name:'Ziwo', pct:30}],
+    stage:'pending_manager', lastSurvey:'28 Jul 2026', stageDate:'29 Jul 2026'
+  },
+  {
+    id:'6', empType:'Overseas \u2013 International Transfer', status:'Active', name:'Maya Georges Khoury', email:'maya.khoury@maids.cc', role:'Accountable Process Improvement Leader',
+    manager:'Mario Andre Gharios', apil:'Mario Andre Gharios',
+    depts:[{name:'Part Time Cleaner Management', pct:50},{name:'Part Time Client Management', pct:50}],
+    stage:'pending_employee', lastSurvey:'01 Aug 2026'
+  },
+  {
+    id:'7', empType:'Expat', status:'Active', name:'Fadi Elias Nassif', email:'fadi.nassif@maids.cc', role:'Maid Offboarding Expert',
+    manager:'Simon Keorkian', apil:'Simon Keorkian',
+    depts:[{name:'CC Maid Offboarding', pct:50},{name:'MV Maid Offboarding', pct:50}],
+    stage:'pending_employee', lastSurvey:'20 Jun 2026', overdueDays:9
+  },
+  {
+    id:'8', empType:'Overseas \u2013 Bank Transfer', status:'Active', name:'Rana Michel Saade', email:'rana.saade@maids.cc', role:'RB Caller',
+    manager:'Joey Antoine Rizk', apil:'Joey Antoine Rizk',
+    depts:[{name:'CC Live-in Client Management', pct:60},{name:'CC Live-out Client Management', pct:40}],
+    stage:'pending_manager', lastSurvey:'02 Jun 2026', stageDate:'04 Jun 2026'
+  },
+  {
+    id:'9', empType:'Expat', status:'Active', name:'Bilal Hassan Tarabay', email:'bilal.tarabay@maids.cc', role:'Business Analyst',
+    manager:'Tracy Antoine Rizk', apil:'Tracy Antoine Rizk',
+    depts:[{name:'CC Delighters Chatbot', pct:50},{name:'Doctors Chatbot', pct:50}],
+    stage:'confirmed', lastSurvey:'15 Jul 2026'
+  },
+  {
+    id:'10', empType:'Emirati', status:'Active', name:'Dina Kamal Chami', email:'dina.chami@maids.cc', role:'Business Analyst',
+    manager:'Omair Faez Aldebes', apil:'Omair Faez Aldebes',
+    depts:[{name:'PRO Services', pct:50},{name:'Visa', pct:50}],
+    stage:'confirmed', lastSurvey:'15 Jul 2026'
+  },
+  {
+    id:'11', empType:'Expat', status:'Terminated', daysSinceTermination:40, name:'Reem Adib Kanaan', email:'reem.kanaan@maids.cc', role:'Client Relations Specialist',
+    manager:'Diana Charif Hamasny', apil:'Diana Charif Hamasny',
+    depts:[{name:'CC Live-in L1', pct:60},{name:'CC Live-out L1', pct:40}],
+    stage:'confirmed', lastSurvey:'22 Jun 2026'
+  },
+  {
+    id:'12', empType:'Overseas \u2013 International Transfer', status:'Terminated', daysSinceTermination:50, name:'Nour Fadi Aoun', email:'nour.aoun@maids.cc', role:'Sales Agent',
+    manager:'Joey Antoine Rizk', apil:'Joey Antoine Rizk',
+    depts:[{name:'CC Sales', pct:70},{name:'MV Sales', pct:30}],
+    stage:'confirmed', lastSurvey:'12 Jun 2026'
+  },
+];
+
+function sum(depts){ return depts.reduce((a,d)=>a+d.pct,0); }
+function initials(name){ return name.split(' ').filter(Boolean).slice(0,2).map(w=>w[0]).join('').toUpperCase(); }
+function visiblePeople(){
+  // Only people on 2+ departments; terminated people additionally drop off 45 days after termination.
+  return PEOPLE.filter(p => p.depts.length >= 2 && (p.status === 'Active' || p.daysSinceTermination <= 45));
+}
+
+function renderTable(){
+  const body = document.getElementById('tableBody');
+  const list = visiblePeople();
+  body.innerHTML = list.map((p)=>{
+    const i = PEOPLE.indexOf(p);
+    const splitLines = p.depts.map(d=>'<div class="split-line">'+d.name+' <span class="pct">— '+fmtPct(d.pct)+'%</span></div>').join('');
+    const terminatedBadge = p.status === 'Terminated' ? '<span class="terminated-badge">Terminated</span>' : '';
+    return `
+    <tr class="data-row">
+      <td><button class="link-btn" onclick="toggleEdit(${i})">Edit split</button></td>
+      <td>
+        <div class="emp-cell">
+          <div class="emp-avatar">${initials(p.name)}</div>
+          <div>
+            <div class="emp-name">${p.name} ${terminatedBadge}</div>
+            <div class="emp-sub">${p.email}</div>
+          </div>
+        </div>
+      </td>
+      <td>${splitLines}</td>
+      <td>${p.role}</td>
+      <td style="color:var(--ink-soft);">${p.lastSurvey || '—'}</td>
+    </tr>
+    <tr class="row-detail" id="detail-${i}">
+      <td colspan="5">
+        <div class="edit-title">Editing split — ${p.name}</div>
+        <div class="edit-fields">
+          ${p.depts.map((d,di)=>`
+            <div class="edit-field">
+              <label>${d.name}</label>
+              <span>
+                <input type="number" step="0.1" min="0" max="100" value="${fmtPct(d.pct)}" class="split-input"
+                  data-person="${i}" data-dept="${di}" oninput="onSplitInput(${i})">
+                <span class="pct-suffix">%</span>
+              </span>
+            </div>`).join('')}
+          <div class="total-line">Total:<span class="total-value" id="total-${i}">${fmtPct(sum(p.depts))}%</span></div>
+        </div>
+        <div class="edit-actions">
+          <button class="btn btn-outline btn-sm" onclick="toggleEdit(${i})">Cancel</button>
+          <button class="btn btn-solid btn-sm" id="saveBtn-${i}" onclick="saveSplit(${i})">Save split</button>
+          <span class="edit-hint" id="hint-${i}">Must total exactly 100% to save.</span>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+  updateAllSaveStates();
+}
+
+function toggleEdit(i){
+  document.getElementById('detail-'+i).classList.toggle('open');
+}
+
+function onSplitInput(i){
+  const p = PEOPLE[i];
+  document.querySelectorAll('input[data-person="'+i+'"]').forEach(inp=>{
+    const di = parseInt(inp.dataset.dept);
+    let v = parseFloat(inp.value);
+    if(isNaN(v)) v = 0;
+    p.depts[di].pct = Math.max(0, Math.min(100, v));
+  });
+  updateSaveState(i);
+}
+
+function updateSaveState(i){
+  const p = PEOPLE[i];
+  const total = sum(p.depts);
+  const ok = Math.abs(total-100) <= 0.1;
+  const totalEl = document.getElementById('total-'+i);
+  totalEl.textContent = fmtPct(total)+'%';
+  totalEl.style.color = ok ? 'var(--green-ink)' : 'var(--red)';
+  const btn = document.getElementById('saveBtn-'+i);
+  if(btn) btn.disabled = !ok;
+  const hint = document.getElementById('hint-'+i);
+  if(hint) hint.textContent = ok ? 'Ready to save.' : ('Must total exactly 100% (currently '+fmtPct(total)+'%).');
+}
+
+function updateAllSaveStates(){
+  PEOPLE.forEach((p,i)=>{ if(document.getElementById('total-'+i)) updateSaveState(i); });
+}
+
+function saveSplit(i){
+  const p = PEOPLE[i];
+  const total = sum(p.depts);
+  if(Math.abs(total-100)>0.1) return;
+  p.stage = 'confirmed';
+  delete p.overdueDays;
+  delete p.stageDate;
+  const d = new Date();
+  p.lastSurvey = d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});
+  renderTable();
+}
+
+function applyFilter(){ renderTable(); }
+
+function exportCsv(){
+  const header = ['Employee ID','Name','Email','Employee Type','Status','Job Title','Department','Split %','Last update date'];
+  const lines = [header.join(',')];
+  visiblePeople().forEach(p=>{
+    p.depts.forEach(d=>{
+      const line = [p.id, p.name, p.email, p.empType, p.status, p.role, d.name, fmtPct(d.pct), p.lastSurvey || '']
+        .map(v => '"'+String(v).replace(/"/g,'""')+'"');
+      lines.push(line.join(','));
+    });
+  });
+  const blob = new Blob([lines.join('\n')], {type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'department-time-split.csv';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+renderTable();
+
+
+/* ===================== Departments Allocation in Buckets ===================== */
+
+const BUCKETS = [
+  {label:'Onboarding', group:'MV — Maid Visa', who:'general'},
+  {label:'Ongoing',    group:'MV — Maid Visa', who:'general'},
+  {label:'Onboarding', group:'CC Live-in', who:'client'},
+  {label:'Ongoing',    group:'CC Live-in', who:'client'},
+  {label:'Onboarding', group:'CC Live-in', who:'maid'},
+  {label:'Ongoing',    group:'CC Live-in', who:'maid'},
+  {label:'Onboarding', group:'CC Live-out', who:'client'},
+  {label:'Ongoing',    group:'CC Live-out', who:'client'},
+  {label:'Onboarding', group:'CC Live-out', who:'maid'},
+  {label:'Ongoing',    group:'CC Live-out', who:'maid'},
+  {label:'Onboarding', group:'Part Time', who:'client'},
+  {label:'Ongoing',    group:'Part Time', who:'client'},
+  {label:'Onboarding', group:'Part Time', who:'maid'},
+  {label:'Ongoing',    group:'Part Time', who:'maid'},
+  {label:'Onboarding', group:'Travel Assist', who:'general'},
+  {label:'Ongoing',    group:'Travel Assist', who:'general'},
+];
+const BUCKET_GROUPS = [
+  {name:'MV — Maid Visa', type:'single', span:2},
+  {name:'CC Live-in', type:'split', span:4},
+  {name:'CC Live-out', type:'split', span:4},
+  {name:'Part Time', type:'split', span:4},
+  {name:'Travel Assist', type:'single', span:2},
+];
+
+// Real Oct 2026 department data
+const HJ_DEPTS = [
+  {id:'hj1', name:'Marketing', pil:'Mahmoud Ali Alayan', confirmed:false, proposed:[47.5,0,38,0,4.8,0,9.5,0,0.2,0,0,0,0,0,0,0]},
+  {id:'hj2', name:'Customer Experience', pil:'Aya Ibrahim Taher', confirmed:false, proposed:[0,0,20.5,20.5,20,20,4.5,4.5,5,5,0,0,0,0,0,0]},
+  {id:'hj3', name:'AI Implementation', pil:'MHD Amin Mazen Aljebbeh', confirmed:false, proposed:[13.5,31.5,6,14,6,14,1.5,3.5,1.5,3.5,0.5,1,0.5,1,0.6,1.4]},
+  {id:'hj4', name:'R&D', pil:'Ali Hisham Hamdar', confirmed:false, proposed:[13.5,31.5,6,14,6,14,1.5,3.5,1.5,3.5,0.5,1,0.5,1,0.6,1.4]},
+  {id:'hj5', name:'Data Analytics and Reporting', pil:'Chady Younan', confirmed:false, proposed:[13.5,31.5,6,14,6,14,1.5,3.5,1.5,3.5,0.45,1.05,0.45,1.05,0.6,1.4]},
+  {id:'hj6', name:'CEO', pil:'Mario Andre Gharios', confirmed:false, proposed:[13.5,31.5,6,14,6,14,1.5,3.5,1.5,3.5,0.5,1,0.5,1,0.6,1.4]},
+];
+
+
+// The 16 drivers — mode, standing, current ratio, and which departments each feeds.
+// Source: Cost Allocation spec v1.0 (Aug 2026), sections 7-10. Counts as at 25 Aug 2026.
+const DRIVERS = [
+  {id:1, name:'Active CC clients', mode:'derived', dp:0, standing:'approved-kpi', counts:{'live-in':4405,'live-out':979}, ratio:[82,18], feeds:['CSA & Trainers','CC Resolvers Chatbot','Customer Experience','Broadcasting','ChatCC','Ziwo','Chatbot & LLM Development'], hasQuery:true, queryLabel:'Active CC clients'},
+  {id:2, name:'CC net sales, 12 mo', mode:'derived', dp:0, standing:'approved-kpi', counts:{'live-in':7422,'live-out':2422}, ratio:[75,25], feeds:['DDC','ChatCC','Ziwo'], hasQuery:true, queryLabel:'CC net sales, 12 months'},
+  {id:3, name:'CC maids with us', mode:'derived', dp:1, standing:'ad-hoc', counts:{'live-in':4978,'live-out':1233}, ratio:[80.1,19.9], feeds:['CC Maid Retention','CC Maid Offboarding','CC Delighters Chatbot','Customer Experience','Broadcasting','ChatCC','Chatbot & LLM Development','Visa'], hasQuery:true, queryLabel:'CC maids with us'},
+  {id:4, name:'CC prospects by what they seek', mode:'derived', dp:0, standing:'ad-hoc', counts:{'live-in':5430,'live-out':3111}, ratio:[64,36], feeds:['CC Sales'], hasQuery:true, queryLabel:'CC prospects by what they seek'},
+  {id:5, name:'CC → MV switches, still active', mode:'derived', dp:0, standing:'q4-bridge', counts:{'from live-in':3263,'from live-out':382}, ratio:[90,10], feeds:['CC Long Term'], hasQuery:true, queryLabel:'CC → MV switches, still active'},
+  {id:6, name:'Maids per product', mode:'derived', dp:1, standing:'ad-hoc', counts:{'MV':18852,'CC-LI':8304,'CC-LO':1613,'TA':650}, ratio:[64.1,28.2,5.5,2.2], feeds:['Delighters L1','Doctors L1','Doctors','Doctors Chatbot'], hasQuery:true, queryLabel:'Maids per product'},
+  {id:7, name:'Active clients per product', mode:'stated', dp:1, standing:'stated', counts:{'MV':19096,'CC-LI':7668,'CC-LO':1361,'PT':620,'TA':588}, ratio:[64,27,5,2,2], feeds:['Money Collection','Money Control','Police and Control','Risk','Cybersecurity','Emirati Staff','Procurement','PRO Services','Maid Payroll'], hasQuery:false, queryLabel:'Active clients per product'},
+  {id:8, name:'Maid recruitment mix', mode:'stated', dp:1, standing:'human-judgement', counts:{}, ratio:[95,5], feeds:['Maid Recruitment (Maids.AT)','Marketing','Broadcasting','Ziwo','ChatCC'], hasQuery:false},
+  {id:9, name:'Maid onboarding mix', mode:'stated', dp:1, standing:'human-judgement', counts:{'live-in':4978,'live-out':1233,'PT':124}, ratio:[78.6,19.5,1.9], feeds:['Maid Onboarding','Accommodation Management'], hasQuery:false},
+  {id:10, name:'Taxi logistics split', mode:'stated', dp:1, standing:'human-judgement', counts:{}, ratio:[50,50], feeds:['Taxi Logistics'], hasQuery:false},
+  {id:11, name:'Development effort split', mode:'stated', dp:1, standing:'human-judgement', counts:{}, ratio:[45,40,10,3,2], feeds:['R&D','AI Implementation','Jira Administration','CEO','Data Analytics and Reporting'], hasQuery:false},
+  {id:12, name:'Part Time cleaners with us', mode:'stated', dp:0, standing:'ad-hoc', counts:{}, ratio:[124], feeds:['Visa','Part Time Cleaner Management','Maid Onboarding'], hasQuery:true, queryLabel:'Part Time cleaners', noDirectApply:true},
+  {id:13, name:'ChatCC conversations by skill', mode:'stated', dp:0, standing:'ad-hoc', counts:{}, ratio:[6664672], feeds:['ChatCC'], hasQuery:false, noDirectApply:true},
+  {id:14, name:'Calls per team queue (Ziwo)', mode:'volume', dp:0, standing:'no-query', counts:{}, ratio:[], feeds:['Ziwo'], hasQuery:false, noDirectApply:true},
+  {id:15, name:'Maid-nights (accommodation)', mode:'volume', dp:0, standing:'no-query', counts:{}, ratio:[], feeds:['Accommodation Management'], hasQuery:false, noDirectApply:true},
+  {id:16, name:'LLM tokens per project', mode:'volume', dp:0, standing:'no-query', counts:{}, ratio:[], feeds:['Chatbot & LLM Development'], hasQuery:false, noDirectApply:true},
+];
+const STANDING_LABEL = {
+  'approved-kpi':'Approved KPI', 'ad-hoc':'Ad hoc', 'q4-bridge':'Q4 bridge definition',
+  'stated':'Stated (built from approved counts)', 'human-judgement':'Human judgement', 'no-query':'No recorded query',
+};
+
+
+// Bucket index constants — matches BUCKETS/ALLOC_BUCKETS order used throughout.
+const B = {
+  MV_ONB:0, MV_ONG:1,
+  CLI_C_ONB:2, CLI_C_ONG:3, CLI_M_ONB:4, CLI_M_ONG:5,
+  CLO_C_ONB:6, CLO_C_ONG:7, CLO_M_ONB:8, CLO_M_ONG:9,
+  PT_C_ONB:10, PT_C_ONG:11, PT_M_ONB:12, PT_M_ONG:13,
+  TA_ONB:14, TA_ONG:15,
+};
+function zeros16(){ return new Array(16).fill(0); }
+
+// Rounding rule: raw shares, round to dp, residual goes to the largest raw share.
+function driverRounding(counts, dp){
+  const total = counts.reduce((a,b)=>a+b,0);
+  if(total===0) return counts.map(()=>0);
+  const raw = counts.map(c=>100*c/total);
+  const rounded = raw.map(r=>Math.round(r*Math.pow(10,dp))/Math.pow(10,dp));
+  const sum = rounded.reduce((a,b)=>a+b,0);
+  const residual = Math.round((100-sum)*Math.pow(10,dp))/Math.pow(10,dp);
+  if(Math.abs(residual) > 0){
+    const maxIdx = raw.indexOf(Math.max(...raw));
+    rounded[maxIdx] = Math.round((rounded[maxIdx]+residual)*Math.pow(10,dp))/Math.pow(10,dp);
+  }
+  return rounded;
+}
+
+/* ===================== Constructions A–G + Own P&L ===================== */
+// A — single bucket, 100%. No driver — trivial enough to set directly on the department's row.
+
+// B — one cut, live-in vs live-out, applied to a given ongoing bucket pair (client-side by default).
+function constructionB(ratio, cliIdx, cloIdx){
+  const row = zeros16();
+  row[cliIdx] = ratio[0];
+  row[cloIdx] = ratio[1];
+  return row;
+}
+
+// C — maids per product, four ways (maid-side ongoing: MV / CC-LI-maid / CC-LO-maid / TA).
+function constructionC(ratio){
+  const row = zeros16();
+  row[B.MV_ONG] = ratio[0];
+  row[B.CLI_M_ONG] = ratio[1];
+  row[B.CLO_M_ONG] = ratio[2];
+  row[B.TA_ONG] = ratio[3];
+  return row;
+}
+
+// D — active clients per product, five ways, three variants.
+function constructionD(ratio, variant){
+  // ratio = [MV, CC-LI, CC-LO, PT, TA]
+  const row = zeros16();
+  if(variant === 'maid-ongoing'){ // e.g. Maid Payroll
+    row[B.MV_ONG]=ratio[0]; row[B.CLI_M_ONG]=ratio[1]; row[B.CLO_M_ONG]=ratio[2]; row[B.PT_M_ONG]=ratio[3]; row[B.TA_ONG]=ratio[4];
+  } else if(variant === 'pt-dropped'){ // e.g. PRO Services — PT dropped, remaining renormalised to 100
+    const kept = [ratio[0],ratio[1],ratio[2],ratio[4]];
+    const keptSum = kept.reduce((a,b)=>a+b,0);
+    const norm = kept.map(v=>Math.round((v/keptSum*100)*10)/10);
+    row[B.MV_ONG]=norm[0]; row[B.CLI_C_ONG]=norm[1]; row[B.CLO_C_ONG]=norm[2]; row[B.TA_ONG]=norm[3];
+  } else { // default: client-ongoing
+    row[B.MV_ONG]=ratio[0]; row[B.CLI_C_ONG]=ratio[1]; row[B.CLO_C_ONG]=ratio[2]; row[B.PT_C_ONG]=ratio[3]; row[B.TA_ONG]=ratio[4];
+  }
+  return row;
+}
+
+// E — development construction. Cut 1: product (5-way). Cut 2: 30:70 onboarding:ongoing within each product.
+// Cut 3: CC and PT further split 50:50 client:maid. The only construction landing on all 16 buckets.
+function constructionE(ratio){
+  // ratio = [MV, CC-LI, CC-LO, PT, TA]
+  const row = zeros16();
+  const [mv, cli, clo, pt, ta] = ratio;
+  const onb = v => Math.round(v*0.3*100)/100;
+  const ong = v => Math.round(v*0.7*100)/100;
+  row[B.MV_ONB] = onb(mv);           row[B.MV_ONG] = ong(mv);
+  const cliOnb = onb(cli), cliOng = ong(cli);
+  row[B.CLI_C_ONB] = Math.round(cliOnb*0.5*100)/100;  row[B.CLI_M_ONB] = Math.round(cliOnb*0.5*100)/100;
+  row[B.CLI_C_ONG] = Math.round(cliOng*0.5*100)/100;  row[B.CLI_M_ONG] = Math.round(cliOng*0.5*100)/100;
+  const cloOnb = onb(clo), cloOng = ong(clo);
+  row[B.CLO_C_ONB] = Math.round(cloOnb*0.5*100)/100;  row[B.CLO_M_ONB] = Math.round(cloOnb*0.5*100)/100;
+  row[B.CLO_C_ONG] = Math.round(cloOng*0.5*100)/100;  row[B.CLO_M_ONG] = Math.round(cloOng*0.5*100)/100;
+  const ptOnb = onb(pt), ptOng = ong(pt);
+  row[B.PT_C_ONB] = Math.round(ptOnb*0.5*100)/100;    row[B.PT_M_ONB] = Math.round(ptOnb*0.5*100)/100;
+  row[B.PT_C_ONG] = Math.round(ptOng*0.5*100)/100;    row[B.PT_M_ONG] = Math.round(ptOng*0.5*100)/100;
+  row[B.TA_ONB] = onb(ta);           row[B.TA_ONG] = ong(ta);
+  return row;
+}
+
+// F — bespoke, multi-cut. Each of the 11 departments has its own ordered cut sequence.
+// None are implemented generically here — each needs its own definition before it can auto-recompute.
+// Visa (below) is shown as a manual placeholder row for now, not a working construction.
+
+// G — overhead. No driver of its own; shaped by where everybody else's time goes.
+// Not auto-recomputable here — a simple average of the other rows in this mockup proved
+// inaccurate against the real data, so G departments keep their loaded value until someone
+// with the real weighting logic defines it, same treatment as construction F.
+
+// Own P&L — no construction. All 16 weights zero — set directly on the department's row.
+
+const FF_DEPTS = [
+  {name:'AI Center of Excellence', source:'system', lastComputed:'25 Aug 2026', query:null, construction:'F', proposed:[6.25,6.25,6.25,6.25,6.25,6.25,6.25,6.25,6.25,6.25,6.25,6.25,6.25,6.25,6.25,6.25]},
+  {name:'Accommodation Management', source:'system', lastComputed:'25 Aug 2026', query:null, construction:'F', proposed:[0.0,0.0,0.0,0.0,21,70,0.0,0.0,7.2,0.0,0.0,0.0,1.8,0.0,0.0,0.0]},
+  {name:'Beirut Office Management', source:'system', lastComputed:'25 Aug 2026', query:null, construction:'G', proposed:[11.5,24.5,8.8,15.6,8,8.5,3,4,1.2,3,1.3,3.4,0.2,5,0.3,1.7]},
+  {name:'Broadcasting', source:'system', lastComputed:'25 Aug 2026', query:'Query 2', construction:'F', proposed:[2.8,14.9,12.1,6.6,6.3,36.9,2.6,1.4,0.3,9.1,0.2,2.9,0,2.5,0.2,1.2]},
+  {name:'CC Delighters Chatbot', source:'system', lastComputed:'25 Aug 2026', query:'Query 2', construction:'F', proposed:[0.0,0.0,0.0,80,0.0,0.0,0.0,20,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0]},
+  {name:'CC L1', source:'system', lastComputed:'25 Aug 2026', query:null, construction:'F', proposed:[0,0,0,82,0,0,0,18,0,0,0,0,0,0,0,0]},
+  {name:'CC Live-In Maid Management', source:'system', lastComputed:'25 Aug 2026', query:null, construction:'A', proposed:[0.0,0.0,0.0,0.0,0.0,100,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0]},
+  {name:'CC Live-in Client Management', source:'system', lastComputed:'25 Aug 2026', query:null, construction:'A', proposed:[0.0,0.0,0.0,100,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0]},
+  {name:'CC Live-in L1', source:'system', lastComputed:'25 Aug 2026', query:null, construction:'A', proposed:[0.0,0.0,0.0,100,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0]},
+  {name:'CC Live-in L2', source:'system', lastComputed:'25 Aug 2026', query:null, construction:'A', proposed:[0.0,0.0,0.0,100,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0]},
+  {name:'CC Live-out Client Management', source:'system', lastComputed:'25 Aug 2026', query:null, construction:'A', proposed:[0.0,0.0,0.0,0.0,0.0,0.0,0.0,100,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0]},
+  {name:'CC Live-out L1', source:'system', lastComputed:'25 Aug 2026', query:null, construction:'A', proposed:[0.0,0.0,0.0,0.0,0.0,0.0,0.0,100,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0]},
+  {name:'CC Live-out L2', source:'system', lastComputed:'25 Aug 2026', query:null, construction:'A', proposed:[0.0,0.0,0.0,0.0,0.0,0.0,0.0,100,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0]},
+  {name:'CC Live-out Maid Management', source:'system', lastComputed:'25 Aug 2026', query:null, construction:'A', proposed:[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,100,0.0,0.0,0.0,0.0,0.0,0.0]},
+  {name:'CC Long Term', source:'system', lastComputed:'25 Aug 2026', query:'Query 6', construction:'B', proposed:[0.0,0.0,0.0,90,0.0,0.0,0.0,10,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0]},
+  {name:'CC Maid Offboarding', source:'system', lastComputed:'25 Aug 2026', query:'Query 2', construction:'F', proposed:[0.0,0.0,0.0,0.0,0.0,80,0.0,0.0,0.0,20,0.0,0.0,0.0,0.0,0.0,0.0]},
+  {name:'CC Maid Retention', source:'system', lastComputed:'25 Aug 2026', query:'Query 2', construction:'F', proposed:[0.0,0.0,0.0,0.0,0.0,80,0.0,0.0,0.0,20,0.0,0.0,0.0,0.0,0.0,0.0]},
+  {name:'CC Resolvers Chatbot', source:'system', lastComputed:'25 Aug 2026', query:'Query 1', construction:'B', proposed:[0.0,0.0,0.0,82,0.0,0.0,0.0,18,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0]},
+  {name:'CC Sales', source:'system', lastComputed:'25 Aug 2026', query:'Query 4', construction:'B', proposed:[0.0,0.0,64,0.0,0.0,0.0,36,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0]},
+  {name:'CSA & Trainers', source:'system', lastComputed:'25 Aug 2026', query:'Query 1', construction:'B', proposed:[0.0,0.0,0.0,82,0.0,0.0,0.0,18,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0]},
+  {name:'ChatCC', source:'system', lastComputed:'25 Aug 2026', query:'Query 5', construction:'F', proposed:[2.1,22.2,6.1,7.8,29.5,16,2,1.7,1.6,4,0.6,1.7,0,2.6,0.2,1.9]},
+  {name:'Chatbot & LLM Development', source:'system', lastComputed:'25 Aug 2026', query:'Query 2', construction:'F', proposed:[15.2,22.8,13.12,19.68,8.0,8.0,2.88,4.32,2.0,2.0,0.0,0.0,0.0,0.0,0.8,1.2]},
+  {name:'Customer Operations Excellence', source:'system', lastComputed:'25 Aug 2026', query:null, construction:'F', proposed:[6.25,6.25,6.25,6.25,6.25,6.25,6.25,6.25,6.25,6.25,6.25,6.25,6.25,6.25,6.25,6.25]},
+  {name:'Cybersecurity', source:'system', lastComputed:'25 Aug 2026', query:'Query 7', construction:'D', proposed:[0.0,64,0.0,27,0.0,0.0,0.0,5,0.0,0.0,0.0,2,0.0,0.0,0.0,2]},
+  {name:'DDC', source:'system', lastComputed:'25 Aug 2026', query:'Query 5', construction:'F', proposed:[45,0.0,37.5,0.0,0.0,0.0,12.5,0.0,0.0,0.0,0.0,0.0,0.0,0.0,5,0.0]},
+  {name:'Delighters L1', source:'system', lastComputed:'25 Aug 2026', query:'Query 8', construction:'C', proposed:[0.0,64.1,0.0,0.0,0.0,28.2,0.0,0.0,0.0,5.5,0.0,0.0,0.0,0.0,0.0,2.2]},
+  {name:'Doctors', source:'system', lastComputed:'25 Aug 2026', query:'Query 8', construction:'C', proposed:[0.0,64.1,0.0,0.0,0.0,28.2,0.0,0.0,0.0,5.5,0.0,0.0,0.0,0.0,0.0,2.2]},
+  {name:'Doctors Chatbot', source:'system', lastComputed:'25 Aug 2026', query:'Query 8', construction:'C', proposed:[0.0,64.1,0.0,0.0,0.0,28.2,0.0,0.0,0.0,5.5,0.0,0.0,0.0,0.0,0.0,2.2]},
+  {name:'Doctors L1', source:'system', lastComputed:'25 Aug 2026', query:'Query 8', construction:'C', proposed:[0.0,64.1,0.0,0.0,0.0,28.2,0.0,0.0,0.0,5.5,0.0,0.0,0.0,0.0,0.0,2.2]},
+  {name:'Emirati Staff', source:'system', lastComputed:'25 Aug 2026', query:'Query 7', construction:'D', proposed:[0.0,64,0.0,27,0.0,0.0,0.0,5,0.0,0.0,0.0,2,0.0,0.0,0.0,2]},
+  {name:'Jira Administration', source:'system', lastComputed:'25 Aug 2026', query:null, construction:'F', proposed:[13.5,31.5,6.0,14.0,6.0,14.0,1.5,3.5,1.5,3.5,0.45,1.05,0.45,1.05,0.6,1.4]},
+  {name:'MV Accounting Flow CX', source:'system', lastComputed:'25 Aug 2026', query:null, construction:'A', proposed:[0.0,100,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0]},
+  {name:'MV CX', source:'system', lastComputed:'25 Aug 2026', query:null, construction:'A', proposed:[0.0,100,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0]},
+  {name:'MV L1', source:'system', lastComputed:'25 Aug 2026', query:null, construction:'A', proposed:[0.0,100,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0]},
+  {name:'MV L2', source:'system', lastComputed:'25 Aug 2026', query:null, construction:'A', proposed:[0.0,100,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0]},
+  {name:'MV Maid Offboarding', source:'system', lastComputed:'25 Aug 2026', query:null, construction:'A', proposed:[0.0,100,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0]},
+  {name:'MV Product', source:'system', lastComputed:'25 Aug 2026', query:null, construction:'A', proposed:[0.0,100,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0]},
+  {name:'MV Resolvers Chatbot', source:'system', lastComputed:'25 Aug 2026', query:null, construction:'A', proposed:[0.0,100,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0]},
+  {name:'MV Sales', source:'system', lastComputed:'25 Aug 2026', query:null, construction:'A', proposed:[100,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0]},
+  {name:'Maid Onboarding', source:'system', lastComputed:'25 Aug 2026', query:null, construction:'F', proposed:[0.0,0.0,0.0,0.0,78.6,0.0,0.0,0.0,19.5,0.0,0.0,0.0,1.9,0.0,0.0,0.0]},
+  {name:'Maid Payroll', source:'system', lastComputed:'25 Aug 2026', query:'Query 7', construction:'D', proposed:[0.0,64,0.0,0.0,0.0,27,0.0,0.0,0.0,5,0.0,0.0,0.0,2,0.0,2]},
+  {name:'Maid Recruitment (Maids.AT)', source:'system', lastComputed:'25 Aug 2026', query:null, construction:'F', proposed:[0.0,0.0,0.0,0.0,95,0.0,0.0,0.0,5,0.0,0.0,0.0,0.0,0.0,0.0,0.0]},
+  {name:'Money Collection', source:'system', lastComputed:'25 Aug 2026', query:'Query 7', construction:'D', proposed:[0.0,64,0.0,27,0.0,0.0,0.0,5,0.0,0.0,0.0,2,0.0,0.0,0.0,2]},
+  {name:'Money Control', source:'system', lastComputed:'25 Aug 2026', query:'Query 7', construction:'D', proposed:[0.0,64,0.0,27,0.0,0.0,0.0,5,0.0,0.0,0.0,2,0.0,0.0,0.0,2]},
+  {name:'Office Staff Payroll', source:'system', lastComputed:'25 Aug 2026', query:null, construction:'G', proposed:[11.5,24.5,8.8,15.6,8,8.5,3,4,1.2,3,1.3,3.4,0.2,5,0.3,1.7]},
+  {name:'Other Nationalities', source:'system', lastComputed:'25 Aug 2026', query:null, construction:'F', proposed:[0.0,0.0,10,10,70,10,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0]},
+  {name:'PRO Services', source:'system', lastComputed:'25 Aug 2026', query:'Query 7', construction:'D', proposed:[0.0,65,0.0,28,0.0,0.0,0.0,5,0.0,0.0,0.0,0.0,0.0,0.0,0.0,2]},
+  {name:'Part Time Cleaner Management', source:'system', lastComputed:'25 Aug 2026', query:null, construction:'A', proposed:[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,100,0.0,0.0]},
+  {name:'Part Time Client Management', source:'system', lastComputed:'25 Aug 2026', query:null, construction:'A', proposed:[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,100,0.0,0.0,0.0,0.0]},
+  {name:'Part Time Sales', source:'system', lastComputed:'25 Aug 2026', query:null, construction:'A', proposed:[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,100,0.0,0.0,0.0,0.0,0.0]},
+  {name:'Police and Control', source:'system', lastComputed:'25 Aug 2026', query:'Query 7', construction:'D', proposed:[0.0,64,0.0,27,0.0,0.0,0.0,5,0.0,0.0,0.0,2,0.0,0.0,0.0,2]},
+  {name:'Procurement', source:'system', lastComputed:'25 Aug 2026', query:'Query 7', construction:'D', proposed:[0.0,64,0.0,27,0.0,0.0,0.0,5,0.0,0.0,0.0,2,0.0,0.0,0.0,2]},
+  {name:'Risk', source:'system', lastComputed:'25 Aug 2026', query:'Query 7', construction:'D', proposed:[0.0,64,0.0,27,0.0,0.0,0.0,5,0.0,0.0,0.0,2,0.0,0.0,0.0,2]},
+  {name:'Staff Recruitment', source:'system', lastComputed:'25 Aug 2026', query:null, construction:'G', proposed:[11.5,24.5,8.8,15.6,8,8.5,3,4,1.2,3,1.3,3.4,0.2,5,0.3,1.7]},
+  {name:'Taxi Logistics', source:'system', lastComputed:'25 Aug 2026', query:null, construction:'F', proposed:[0.0,0.0,0.0,0.0,0.0,50,0.0,0.0,0.0,50,0.0,0.0,0.0,0.0,0.0,0.0]},
+  {name:'Travel Assist Client Management', source:'system', lastComputed:'25 Aug 2026', query:null, construction:'A', proposed:[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,100]},
+  {name:'Travel Assist Sales', source:'system', lastComputed:'25 Aug 2026', query:null, construction:'A', proposed:[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,100,0.0]},
+  {name:'Visa', source:'system', lastComputed:'25 Aug 2026', query:'Query 2', construction:'F', proposed:[50.925,16.975,0.0,0.0,17.775,5.925,0.0,0.0,4.275,1.425,0.0,0.0,0.45,0.15,1.575,0.525]},
+  {name:'Ziwo', source:'system', lastComputed:'25 Aug 2026', query:'Query 5', construction:'F', proposed:[14.8,7.3,35.6,22,1.9,0.2,11.8,4.8,0.1,0,0,0,0,0,1.2,0.3]},
+];
+
+const DEPT_INFO = {
+  "CC Live-out Maid Management": {driver:"Live-out maids", formula:"100% CC live-out maid ongoing", lands:"Maid Ongoing \u2014 CC-LO", owner:"set"},
+  "CC Live-In Maid Management": {driver:"Live-in maids", formula:"100% CC live-in maid ongoing", lands:"Maid Ongoing \u2014 CC-LI", owner:"set"},
+  "Delighters L1": {driver:"Maids per product", formula:"MV 64.1 / CC live-in 28.2 / CC live-out 5.5 / Travel Assist 2.2 \u2014 maids on our books, no Part Time, Travel Assist counted as was-TA only, CC long term as CC", lands:"Maid Ongoing + Ongoing \u2014 MV, TA, CC-LI, CC-LO", owner:"set"},
+  "Doctors L1": {driver:"Maids per product", formula:"MV 64.1 / CC live-in 28.2 / CC live-out 5.5 / Travel Assist 2.2 \u2014 maids on our books, no Part Time, Travel Assist counted as was-TA only, CC long term as CC", lands:"Maid Ongoing + Ongoing \u2014 MV, TA, CC-LI, CC-LO", owner:"data pull"},
+  "CC Long Term": {driver:"The CC-to-MV switches, live-in vs live-out", formula:"3,263 / 382 of 3,645 active switches = 90 / 10", lands:"Client Ongoing \u2014 CC-LI, CC-LO", owner:"set"},
+  "CSA & Trainers": {driver:"Active CC clients", formula:"live-in / live-out = 4,405 / 979 = 82 / 18", lands:"Client Ongoing \u2014 CC-LI, CC-LO", owner:"set"},
+  "MV Sales": {driver:"Direct \u2014 pure MV client acquisition", formula:"100% \u2192 MV \u00b7 Onboarding", lands:"Onboarding \u2014 MV", owner:"set"},
+  "MV L1": {driver:"Direct \u2014 support on live MV contracts", formula:"100% \u2192 MV \u00b7 Ongoing", lands:"Ongoing \u2014 MV", owner:"set"},
+  "MV L2": {driver:"Direct \u2014 support on live MV contracts", formula:"100% \u2192 MV \u00b7 Ongoing", lands:"Ongoing \u2014 MV", owner:"set"},
+  "MV Product": {driver:"Direct \u2014 serving live contracts", formula:"100% \u2192 MV \u00b7 Ongoing", lands:"Ongoing \u2014 MV", owner:"set"},
+  "MV CX": {driver:"Direct \u2014 client experience on live contracts", formula:"100% \u2192 MV \u00b7 Ongoing", lands:"Ongoing \u2014 MV", owner:"set"},
+  "MV Accounting Flow CX": {driver:"Direct \u2014 MV accounting journey", formula:"100% \u2192 MV \u00b7 Ongoing", lands:"Ongoing \u2014 MV", owner:"set"},
+  "MV Maid Offboarding": {driver:"Direct \u2014 part of serving the live MV contract", formula:"100% \u2192 MV \u00b7 Ongoing", lands:"Ongoing \u2014 MV", owner:"set"},
+  "Travel Assist Sales": {driver:"Direct \u2014 TA acquisition", formula:"100% \u2192 Travel Assist \u00b7 Onboarding", lands:"Onboarding \u2014 TA", owner:"set"},
+  "Travel Assist Client Management": {driver:"Direct \u2014 serving TA clients", formula:"100% \u2192 Travel Assist \u00b7 Ongoing", lands:"Ongoing \u2014 TA", owner:"set"},
+  "CC Sales": {driver:"CC prospects by what they seek", formula:"live-in 5,430 / live-out 3,111 of 8,541 labelled seekers = 64 / 36", lands:"Client Onboarding \u2014 CC-LI, CC-LO", owner:"data pull"},
+  "CC Live-in L1": {driver:"Direct \u2014 live-in client support", formula:"100% \u2192 CC Live-in \u00b7 Client Ongoing", lands:"Client Ongoing \u2014 CC-LI", owner:"set"},
+  "CC Live-in L2": {driver:"Direct \u2014 live-in client support", formula:"100% \u2192 CC Live-in \u00b7 Client Ongoing", lands:"Client Ongoing \u2014 CC-LI", owner:"set"},
+  "CC Live-in Client Management": {driver:"Direct \u2014 serving live-in clients", formula:"100% \u2192 CC Live-in \u00b7 Client Ongoing", lands:"Client Ongoing \u2014 CC-LI", owner:"set"},
+  "CC Live-out L1": {driver:"Direct \u2014 live-out client support", formula:"100% \u2192 CC Live-out \u00b7 Client Ongoing", lands:"Client Ongoing \u2014 CC-LO", owner:"set"},
+  "CC Live-out L2": {driver:"Direct \u2014 live-out client support", formula:"100% \u2192 CC Live-out \u00b7 Client Ongoing", lands:"Client Ongoing \u2014 CC-LO", owner:"set"},
+  "CC Live-out Client Management": {driver:"Direct \u2014 serving live-out clients", formula:"100% \u2192 CC Live-out \u00b7 Client Ongoing", lands:"Client Ongoing \u2014 CC-LO", owner:"set"},
+  "Maid Recruitment (Maids.AT)": {driver:"Set \u2014 sourcing is live-in work", formula:"set 95 / 5: 95% \u2192 CC Live-in \u00b7 Maid Onb \u00b7 5% \u2192 CC Live-out \u00b7 Maid Onb", lands:"Maid Onboarding \u2014 CC-LI, CC-LO", owner:"set"},
+  "Other Nationalities": {driver:"Live-in only \u2014 a split of his time", formula:"70 maid onboarding \u2014 hiring the maids \u00b7 the remaining 30 between maid and client management, evenly across maid ongoing, client ongoing and client onboarding, 10 each", lands:"Client Onboarding + Client Ongoing + Maid Onboarding + Maid Ongoing \u2014 CC-LI", owner:"set"},
+  "Maid Onboarding": {driver:"Maids, split live-in / live-out / part time", formula:"% = maids in bucket \u00f7 total maids = CC live-in 4,978 / CC live-out 1,233 / Part Time 124 of 6,335 = 78.6 / 19.5 / 1.9", lands:"Maid Onboarding \u2014 CC-LI, CC-LO, PT", owner:"data pull"},
+  "Accommodation Management": {driver:"Maids housed; the onboarding leg follows Maid Onboarding", formula:"70 ongoing, all CC live-in \u00b7 30 onboarding split as Maid Onboarding \u2014 CC live-in 70 / CC live-out 24 / Part Time 6 = 21 / 7.2 / 1.8", lands:"Maid Onboarding + Maid Ongoing \u2014 CC-LI, CC-LO, PT", owner:"data pull"},
+  "Doctors": {driver:"Maids per product", formula:"MV 64.1 / CC live-in 28.2 / CC live-out 5.5 / Travel Assist 2.2 \u2014 maids on our books, no Part Time, Travel Assist counted as was-TA only, CC long term as CC", lands:"Maid Ongoing + Ongoing \u2014 MV, TA, CC-LI, CC-LO", owner:"set"},
+  "CC Maid Retention": {driver:"CC maids with us, Tracked and cleaners excluded", formula:"CC maids with us \u2014 Tracked and the 124 Part Time cleaners excluded \u2014 4,978 / 1,233 of 6,211 = 80 / 20", lands:"Maid Ongoing \u2014 CC-LI, CC-LO", owner:"data pull"},
+  "CC Maid Offboarding": {driver:"CC maids with us, Tracked and cleaners excluded", formula:"CC maids with us \u2014 Tracked and the 124 Part Time cleaners excluded \u2014 4,978 / 1,233 of 6,211 = 80 / 20", lands:"Maid Ongoing \u2014 CC-LI, CC-LO", owner:"data pull"},
+  "Taxi Logistics": {driver:"Set \u2014 daily live-out rides against a much larger live-in base", formula:"50 / 50 live-in vs live-out", lands:"Maid Ongoing \u2014 CC-LI, CC-LO", owner:"set"},
+  "Part Time Sales": {driver:"Direct \u2014 PT client acquisition", formula:"100% \u2192 Part Time \u00b7 Client Onboarding", lands:"Client Onboarding \u2014 PT", owner:"set"},
+  "Part Time Client Management": {driver:"Direct \u2014 managing PT clients", formula:"100% \u2192 Part Time \u00b7 Client Ongoing", lands:"Client Ongoing \u2014 PT", owner:"set"},
+  "Part Time Cleaner Management": {driver:"Direct \u2014 managing PT cleaners", formula:"100% \u2192 Part Time \u00b7 Maid Ongoing", lands:"Maid Ongoing \u2014 PT", owner:"set"},
+  "DDC": {driver:"Net sales per product", formula:"MV 45 / CC live-in 37.5 / CC live-out 12.5 / TA 5", lands:"Client Onboarding + Onboarding \u2014 MV, TA, CC-LI, CC-LO", owner:"data pull"},
+  "Money Collection": {driver:"Active clients per product, CC-to-MV counted as CC", formula:"MV 19,096 / CC live-in 7,668 / CC live-out 1,361 / Part Time 620 / Travel Assist 588 = 64 / 27 / 5 / 2 / 2, CC-to-MV switchers counted on the CC side", lands:"Client Ongoing + Ongoing \u2014 MV, TA, CC-LI, CC-LO, PT", owner:"data pull"},
+  "Money Control": {driver:"Active clients per product, CC-to-MV counted as CC", formula:"MV 19,096 / CC live-in 7,668 / CC live-out 1,361 / Part Time 620 / Travel Assist 588 = 64 / 27 / 5 / 2 / 2, CC-to-MV switchers counted on the CC side", lands:"Client Ongoing + Ongoing \u2014 MV, TA, CC-LI, CC-LO, PT", owner:"data pull"},
+  "Maid Payroll": {driver:"Maids we pay, across every product", formula:"MV 64 / CC live-in 27 / CC live-out 5 / PT 2 / TA 2", lands:"Maid Ongoing + Ongoing \u2014 MV, TA, CC-LI, CC-LO, PT", owner:"data pull"},
+  "Visa": {driver:"Clients where the maid is theirs, maids where she is ours", formula:"70 own-maid (MV / TA on active clients, 97 / 3) + 30 sourced (CC live-in 4,978 / CC live-out 1,233 / Part Time cleaners 124 = 79 / 19 / 2); every share 75% onboarding / 25% ongoing", lands:"Maid Onboarding + Maid Ongoing + Onboarding + Ongoing \u2014 MV, TA, CC-LI, CC-LO, PT", owner:"Sharaani"},
+  "PRO Services": {driver:"Active clients per product, CC-to-MV counted as CC, no Part Time", formula:"MV 65 / CC live-in 28 / CC live-out 5 / Travel Assist 2, renormalised without Part Time", lands:"Client Ongoing + Ongoing \u2014 MV, TA, CC-LI, CC-LO", owner:"data pull"},
+  "Police and Control": {driver:"Active clients per product, CC-to-MV counted as CC", formula:"MV 19,096 / CC live-in 7,668 / CC live-out 1,361 / Part Time 620 / Travel Assist 588 = 64 / 27 / 5 / 2 / 2, CC-to-MV switchers counted on the CC side", lands:"Client Ongoing + Ongoing \u2014 MV, TA, CC-LI, CC-LO, PT", owner:"data pull"},
+  "Risk": {driver:"Active clients per product, CC-to-MV counted as CC", formula:"MV 19,096 / CC live-in 7,668 / CC live-out 1,361 / Part Time 620 / Travel Assist 588 = 64 / 27 / 5 / 2 / 2, CC-to-MV switchers counted on the CC side", lands:"Client Ongoing + Ongoing \u2014 MV, TA, CC-LI, CC-LO, PT", owner:"data pull"},
+  "Broadcasting": {driver:"Broadcasts sent, by audience", formula:"% = broadcasts to that audience \u00f7 total broadcasts; a client audience splits 82 / 18 on active clients, a maid audience 80 / 20 on maids who have arrived", lands:"Client Onboarding + Client Ongoing + Maid Onboarding + Maid Ongoing + Onboarding + Ongoing \u2014 MV, TA, CC-LI, CC-LO, PT", owner:"data pull"},
+  "Doctors Chatbot": {driver:"Maids per product", formula:"MV 64.1 / CC live-in 28.2 / CC live-out 5.5 / Travel Assist 2.2 \u2014 maids on our books, no Part Time, Travel Assist counted as was-TA only, CC long term as CC", lands:"Maid Ongoing + Ongoing \u2014 MV, TA, CC-LI, CC-LO", owner:"data pull"},
+  "Chatbot & LLM Development": {driver:"Effort split by leg, not by contract counts", formula:"20 to the maid-facing bots (80 / 20 on CC maids with us, then 50 : 50 onboarding to ongoing) \u00b7 80 equally between CC and MV, each 60 : 40 ongoing to onboarding, the CC half 82 / 18 on active clients, Travel Assist taking 2 of the MV 40", lands:"Client Onboarding + Client Ongoing + Maid Onboarding + Maid Ongoing + Onboarding + Ongoing \u2014 MV, TA, CC-LI, CC-LO", owner:"Sulaiman / Ziad"},
+  "Ziwo": {driver:"Calls per team queue", formula:"% = calls in bucket \u00f7 total calls; the CC client-ongoing leg splits 82/18 on active clients, the sales leg 75/25 on net sales, maid onboarding 95/5", lands:"Client Onboarding + Client Ongoing + Maid Onboarding + Maid Ongoing + Onboarding + Ongoing \u2014 MV, TA, CC-LI, CC-LO", owner:"data pull"},
+  "Cybersecurity": {driver:"Active clients per product, CC-to-MV counted as CC", formula:"MV 19,096 / CC live-in 7,668 / CC live-out 1,361 / Part Time 620 / Travel Assist 588 = 64 / 27 / 5 / 2 / 2, CC-to-MV switchers counted on the CC side", lands:"Client Ongoing + Ongoing \u2014 MV, TA, CC-LI, CC-LO, PT", owner:"data pull"},
+  "Staff Recruitment": {driver:"Employees present and tagged outside CEO and Founder", formula:"% = \u03a3(employee \u00d7 their own department's split) \u00f7 844 employees present and tagged outside CEO and Founder", lands:"Client Onboarding + Client Ongoing + Maid Onboarding + Maid Ongoing + Onboarding + Ongoing \u2014 MV, TA, CC-LI, CC-LO, PT", owner:"org chart"},
+  "Emirati Staff": {driver:"Active clients per product, CC-to-MV counted as CC", formula:"MV 19,096 / CC live-in 7,668 / CC live-out 1,361 / Part Time 620 / Travel Assist 588 = 64 / 27 / 5 / 2 / 2, CC-to-MV switchers counted on the CC side", lands:"Client Ongoing + Ongoing \u2014 MV, TA, CC-LI, CC-LO, PT", owner:"set"},
+  "Beirut Office Management": {driver:"Employees present and tagged outside CEO and Founder", formula:"% = \u03a3(employee \u00d7 their own department's split) \u00f7 844 employees present and tagged outside CEO and Founder \u2014 the company-wide profile stands in until a Beirut roster exists", lands:"Client Onboarding + Client Ongoing + Maid Onboarding + Maid Ongoing + Onboarding + Ongoing \u2014 MV, TA, CC-LI, CC-LO, PT", owner:"org chart"},
+  "Procurement": {driver:"Active clients per product, CC-to-MV counted as CC", formula:"MV 19,096 / CC live-in 7,668 / CC live-out 1,361 / Part Time 620 / Travel Assist 588 = 64 / 27 / 5 / 2 / 2, CC-to-MV switchers counted on the CC side", lands:"Client Ongoing + Ongoing \u2014 MV, TA, CC-LI, CC-LO, PT", owner:"Mario"},
+  "Office Staff Payroll": {driver:"Employees present and tagged outside CEO and Founder", formula:"% = \u03a3(employee \u00d7 their own department's split) \u00f7 844 employees present and tagged outside CEO and Founder", lands:"Client Onboarding + Client Ongoing + Maid Onboarding + Maid Ongoing + Onboarding + Ongoing \u2014 MV, TA, CC-LI, CC-LO, PT", owner:"org chart"},
+  "Data Analytics and Reporting": {driver:"Built like R&D", formula:"Cut 1 \u2014 which product? MV 45 / CC live-in 40 / CC live-out 10 / Part Time 3 / Travel Assist 2. Cut 2 \u2014 each product then 30 : 70 onboarding to ongoing. Cut 3 \u2014 CC and Part Time a further 50 : 50 client to maid.", lands:"Client Onboarding + Client Ongoing + Maid Onboarding + Maid Ongoing + Onboarding + Ongoing \u2014 MV, TA, CC-LI, CC-LO, PT", owner:"Chady"},
+  "Jira Administration": {driver:"Same construction as R&D", formula:"R&D's construction \u2014 product share MV 45 / CC live-in 40 / CC live-out 10 / Part Time 3 / Travel Assist 2, each product then 30 : 70 onboarding to ongoing, and CC and Part Time a further 50 : 50 between client and maid", lands:"Client Onboarding + Client Ongoing + Maid Onboarding + Maid Ongoing + Onboarding + Ongoing \u2014 MV, TA, CC-LI, CC-LO, PT", owner:"set"},
+  "CC Resolvers Chatbot": {driver:"Active CC clients - the resolvers answer clients", formula:"live-in / live-out = 4,405 / 979 = 82 / 18", lands:"Client Ongoing \u2014 CC-LI, CC-LO", owner:"data pull"},
+  "CC Delighters Chatbot": {driver:"CC maids with us, Tracked and cleaners excluded", formula:"live-in / live-out = 80 / 20", lands:"Client Ongoing \u2014 CC-LI, CC-LO", owner:"data pull"},
+  "MV Resolvers Chatbot": {driver:"Chatbot arm of the MV resolvers", formula:"same as the department it serves \u2014 100% \u2192 MV \u00b7 Ongoing", lands:"Ongoing \u2014 MV", owner:"set"},
+  "ChatCC": {driver:"ChatCC conversations by skill, 12 months (6,664,672 chats)", formula:"% = chats on that skill \u00f7 total chats; the skill gives the stage, the contract type or skill name gives the product; CC then splits per leg \u2014 client onboarding 75/25 on net sales, client ongoing 82/18 on active clients, maid onboarding 95/5, maid ongoing 80/20 on maids who have arrived", lands:"Client Onboarding + Client Ongoing + Maid Onboarding + Maid Ongoing + Onboarding + Ongoing \u2014 MV, TA, CC-LI, CC-LO, PT", owner:"data pull"},
+  "CEO": {driver:"The CEO's own cost", formula:"R&D's construction \u2014 product share MV 45 / CC live-in 40 / CC live-out 10 / Part Time 3 / Travel Assist 2, each product then 30 : 70 onboarding to ongoing, and CC and Part Time a further 50 : 50 between client and maid", lands:"Client Onboarding + Client Ongoing + Maid Onboarding + Maid Ongoing + Onboarding + Ongoing \u2014 MV, TA, CC-LI, CC-LO, PT", owner:"set"},
+  "R&D": {driver:"Development effort split", formula:"Cut 1 \u2014 which product? MV 45 / CC live-in 40 / CC live-out 10 / Part Time 3 / Travel Assist 2. Cut 2 \u2014 each product then 30 : 70 onboarding to ongoing. Cut 3 \u2014 CC and Part Time a further 50 : 50 client to maid. This is the construction Jira Administration, CEO, and Data Analytics and Reporting all reuse.", lands:"Client Onboarding + Client Ongoing + Maid Onboarding + Maid Ongoing + Onboarding + Ongoing \u2014 MV, TA, CC-LI, CC-LO, PT", owner:"set"},
+};
+
+// PLACEHOLDER — pending the real query list. Structure only: 8 named queries, each feeding a subset of Fixed Formula departments.
+const QUERIES = [
+  {name:"Query 1", driverId:1, desc:"Active CC clients \u2014 82 / 18 (live-in / live-out)", feeds:"CSA & Trainers, CC Resolvers Chatbot, Customer Experience, Broadcasting, ChatCC, Ziwo, Chatbot & LLM Development, CC Sales", sql:"-- Active CC clients \u2014 live-in 4,405 \u00b7 live-out 979 \u00b7 MV 19,214\n-- Run: 25 Aug 2026 \u00b7 sales-dashboard__cc-live-in-active-contracts (approved KPI, used verbatim)\nWITH bounds AS (\n  SELECT DATEADD(second,-1,DATEADD(day,1,TO_DATE(CURRENT_DATE()))) AS as_of_ts\n)\nSELECT CASE WHEN CONTRACT_TYPE='CC' AND IS_LIVE_OUT=0 THEN 'cc_live_in'\n            WHEN CONTRACT_TYPE='CC' AND IS_LIVE_OUT=1 THEN 'cc_live_out'\n            WHEN CONTRACT_TYPE='MV' THEN 'mv' END AS \"category\",\n  COUNT(DISTINCT CASE WHEN is_net_sale=TRUE AND sale_date<=(SELECT as_of_ts FROM bounds)\n    AND (date_of_termination>(SELECT as_of_ts FROM bounds) OR date_of_termination IS NULL)\n    THEN id END) AS \"net_sales\"\nFROM BA_VIEWS.SALES_SILVER.CONTRACTS\nWHERE contract_status='ACTIVE'\nGROUP BY \"category\";"},
+  {name:"Query 2", driverId:3, desc:"CC maids with us \u2014 80 / 20 (live-in / live-out)", feeds:"CC Maid Retention, CC Maid Offboarding, CC Delighters Chatbot, Customer Experience, Broadcasting, ChatCC, Chatbot & LLM Development, Visa", sql:"-- CC maids with us \u2014 live-in 4,978 \u00b7 live-out 1,233 \u00b7 6,211 total\n-- Run: 25 Aug 2026 \u00b7 No approved KPI for a maid head-count \u2014 ad hoc, not governed.\nWITH ptc AS (\n  SELECT TRY_TO_NUMBER(ERP_ID) AS ERP_ID\n  FROM BA_VIEWS.PART_TIME_SILVER.PART_TIME_CLEANERS\n  WHERE DELETED_AT IS NULL\n    AND STATUS IN ('available','unavailable','on-vacation',\n                   'preavailable-pending-docs-or-acc','preavailable-being-onboarded')\n)\nSELECT COUNT_IF(LIVE_OUT=0) AS live_in,\n       COUNT_IF(LIVE_OUT=1) AS live_out,\n       COUNT(*)             AS total\nFROM BA_VIEWS.HOUSEMAID_MANAGEMENT_SILVER.HOUSEMAIDS_INFO\nWHERE HOUSEMAID_TYPE IN ('Normal','FREEDOM_OPERATOR','WALKIN')\n  AND STATUS NOT IN ('EMPLOYEMENT_TERMINATED','VISA_UNSUCCESSFUL','REJECTED',\n                     'TRACKED','PASSED_EXIT','IN_EXIT','UNREACHABLE_AFTER_EXIT','NO_SHOW','UNREACHABLE')\n  AND ID NOT IN (SELECT ERP_ID FROM ptc WHERE ERP_ID IS NOT NULL);"},
+  {name:"Query 3", driverId:12, desc:"Part Time cleaners \u2014 124 with us now", feeds:"Visa, Part Time Cleaner Management", sql:"-- Part Time cleaners \u2014 124 with Part Time now; 122 match a maid record\n-- Run: 25 Aug 2026 \u00b7 No approved head-count KPI. Tag-based count is unreliable (also matches was_cleaner).\nSELECT STATUS, COUNT(*) AS n\nFROM BA_VIEWS.PART_TIME_SILVER.PART_TIME_CLEANERS\nWHERE DELETED_AT IS NULL\nGROUP BY STATUS ORDER BY n DESC;\n\n-- with us now = available \u00b7 unavailable \u00b7 on-vacation \u00b7 preavailable-*\n-- out         = backed-out \u00b7 fired \u00b7 resigned \u00b7 converted-to-cc \u00b7 converted-to-mv \u00b7 pending-for-termination-*"},
+  {name:"Query 4", driverId:4, desc:"CC prospects by what they seek \u2014 64 / 36", feeds:"CC Sales", sql:"-- CC prospects by what they seek \u2014 live-in 5,430 \u00b7 live-out 3,111 \u00b7 8,541 labelled \u00b7 599 both\n-- Run: 25 Aug 2026 \u00b7 No approved KPI. Ad hoc; seeker labels only begin 21 May 2026.\nSELECT SUM(li) AS live_in, SUM(lo) AS live_out,\n       SUM(CASE WHEN li=1 AND lo=1 THEN 1 ELSE 0 END) AS both_ways,\n       COUNT(*) AS labelled\nFROM (\n  SELECT CLIENT_ID,\n         MAX(CASE WHEN PROSPECT_LABEL LIKE '%live_in_seeker'  THEN 1 ELSE 0 END) AS li,\n         MAX(CASE WHEN PROSPECT_LABEL LIKE '%live_out_seeker' THEN 1 ELSE 0 END) AS lo\n  FROM BA_VIEWS.SALES_SILVER.PROSPECT_LABELS\n  WHERE PROSPECT_LABEL LIKE 'cc_%_seeker'\n  GROUP BY CLIENT_ID\n);\n-- A prospect seeking both sides is counted once on each side."},
+  {name:"Query 5", driverId:2, desc:"CC net sales, 12 months \u2014 75 / 25", feeds:"CC Sales, DDC, ChatCC, Ziwo", sql:"-- CC net sales, 12 months \u2014 live-in 7,422 \u00b7 live-out 2,422 \u00b7 9,844 total (Aug 2025 \u2013 Jul 2026)\n-- Run: 25 Aug 2026 \u00b7 executive-report-cc__kpicardwithchart-net-sales-cc (approved KPI, Net-Sale block used verbatim)\nSELECT CASE WHEN co.is_live_out = 1 THEN 'Live-out' ELSE 'Live-in' END AS living_type,\n       COUNT(DISTINCT co.id) AS net_sales\nFROM BA_VIEWS.SALES_SILVER.CONTRACTS co\nWHERE co.fake = FALSE\n  AND co.is_net_sale = TRUE\n  AND co.contract_type = 'CC'\n  AND co.sale_date >= DATE_TRUNC('month', DATEADD(month,-12, CURRENT_DATE()))\n  AND co.sale_date <  DATE_TRUNC('month', CURRENT_DATE())\nGROUP BY 1;"},
+  {name:"Query 6", driverId:5, desc:"CC \u2192 MV switches, still active \u2014 90 / 10", feeds:"CC Long Term, Money Collection, Money Control, Police and Control, Risk, Cybersecurity, Emirati Staff, Procurement, PRO Services", sql:"-- CC \u2192 MV switches, still active \u2014 from live-in 3,263 \u00b7 from live-out 382 \u00b7 3,645 active\n-- Run: 25 Aug 2026 \u00b7 Q4 bridge definition (Sharaani / BA). Not one of these registers as a net sale.\nWITH oth AS (\n  SELECT ID FROM BA_VIEWS.HOUSEMAID_MANAGEMENT_SILVER.HOUSEMAIDS_INFO\n  WHERE NATIONALITY IN ('Indian','Sri Lankan','Indonesian','Nepali')\n    AND LANDED_IN_DUBAI_DATE >= '2025-10-01'),\nbridge AS (\n  SELECT DISTINCT MV_CONTRACT_ID AS ID\n  FROM BA_VIEWS.SALES_SILVER.CO_CCTOMV WHERE MV_CONTRACT_ID IS NOT NULL\n  UNION\n  SELECT DISTINCT c.ID\n  FROM BA_VIEWS.SALES_SILVER.CO_CCTOMV x\n  JOIN BA_VIEWS.SALES_SILVER.CONTRACTS cc ON cc.ID = x.CC_CONTRACT_ID\n  JOIN BA_VIEWS.SALES_SILVER.CONTRACTS c\n    ON c.HOUSEMAID_ID = x.MV_FIRST_MAID_ID AND c.CLIENT_ID = cc.CLIENT_ID\n   AND c.CONTRACT_TYPE='MV' AND c.FAKE=FALSE\n   AND ABS(DATEDIFF(day, x.CC_DATE_OF_TERMINATION, c.CONTRACT_CREATION_DATE)) <= 30)\nSELECT CASE WHEN cc.IS_LIVE_OUT=1 THEN 'from CC live-out' ELSE 'from CC live-in' END AS side,\n       COUNT(*) AS switches\nFROM BA_VIEWS.SALES_SILVER.CONTRACTS c\nJOIN bridge b ON b.ID = c.ID\nJOIN BA_VIEWS.SALES_SILVER.CO_CCTOMV x ON x.MV_CONTRACT_ID = c.ID\nJOIN BA_VIEWS.SALES_SILVER.CONTRACTS cc ON cc.ID = x.CC_CONTRACT_ID\nWHERE c.CONTRACT_TYPE='MV' AND c.FAKE=FALSE AND UPPER(c.CONTRACT_STATUS)='ACTIVE'\n  AND COALESCE(c.HOUSEMAID_ID IN (SELECT ID FROM oth), FALSE) = FALSE\nQUALIFY ROW_NUMBER() OVER (PARTITION BY c.ID\n        ORDER BY cc.DATE_OF_TERMINATION DESC NULLS LAST, cc.ID DESC) = 1\nGROUP BY 1;"},
+  {name:"Query 7", driverId:7, desc:"Active clients per product \u2014 64 / 27 / 5 / 2 / 2", feeds:"Money Collection, Money Control, Police and Control, Risk, Cybersecurity, Emirati Staff, Procurement, PRO Services, Maid Payroll", sql:"-- Active clients per product \u2014 MV 19,096 \u00b7 CC live-in 7,668 \u00b7 CC live-out 1,361 \u00b7 Part Time 620 \u00b7 Travel Assist 588\n-- Run: 25 Aug 2026 \u00b7 Built from the two approved counts above.\n-- MV, net of Travel Assist and MaidMatch\nSELECT COUNT(*) FROM BA_VIEWS.SALES_SILVER.CONTRACTS\nWHERE CONTRACT_STATUS='ACTIVE' AND IS_NET_SALE=TRUE AND CONTRACT_TYPE='MV'\n  AND COALESCE(TRAVEL_ASSIST,FALSE)=FALSE AND COALESCE(IS_MMR,0)<>1;     -- 19,096\n\n-- CC, plus the switchers that came from each side (see Query 6)\n--   live-in  4,405 + 3,263 = 7,668\n--   live-out   979 +   382 = 1,361\n-- Part Time 620 and Travel Assist 588 come from those teams' own counts."},
+  {name:"Query 8", driverId:6, desc:"Maids per product \u2014 64.1 / 28.2 / 5.5 / 2.2", feeds:"Doctors, Doctors L1, Doctors Chatbot, Delighters L1", sql:"-- Maids per product \u2014 MV 18,852 (64.1%) \u00b7 CC live-in 8,304 (28.2%) \u00b7 CC live-out 1,613 (5.5%) \u00b7 Travel Assist 650 (2.2%)\n-- Run: 25 Aug 2026 \u00b7 No approved KPI. Part Time excluded from base; Travel Assist = was-TA only.\nWITH ptc AS (\n  SELECT TRY_TO_NUMBER(ERP_ID) AS ERP_ID\n  FROM BA_VIEWS.PART_TIME_SILVER.PART_TIME_CLEANERS\n  WHERE DELETED_AT IS NULL\n    AND STATUS IN ('available','unavailable','on-vacation',\n                   'preavailable-pending-docs-or-acc','preavailable-being-onboarded')),\noth AS (SELECT ID FROM BA_VIEWS.HOUSEMAID_MANAGEMENT_SILVER.HOUSEMAIDS_INFO\n        WHERE NATIONALITY IN ('Indian','Sri Lankan','Indonesian','Nepali')\n          AND LANDED_IN_DUBAI_DATE >= '2025-10-01'),\nbridge AS (\n  SELECT MV_CONTRACT_ID AS ID, CC_CONTRACT_ID\n  FROM BA_VIEWS.SALES_SILVER.CO_CCTOMV WHERE MV_CONTRACT_ID IS NOT NULL\n  UNION\n  SELECT c.ID, x.CC_CONTRACT_ID\n  FROM BA_VIEWS.SALES_SILVER.CO_CCTOMV x\n  JOIN BA_VIEWS.SALES_SILVER.CONTRACTS cc ON cc.ID = x.CC_CONTRACT_ID\n  JOIN BA_VIEWS.SALES_SILVER.CONTRACTS c\n    ON c.HOUSEMAID_ID = x.MV_FIRST_MAID_ID AND c.CLIENT_ID = cc.CLIENT_ID\n   AND c.CONTRACT_TYPE='MV' AND c.FAKE=FALSE\n   AND ABS(DATEDIFF(day, x.CC_DATE_OF_TERMINATION, c.CONTRACT_CREATION_DATE)) <= 30),\nswitched AS (\n  SELECT c.HOUSEMAID_ID AS MAID_ID,\n         CASE WHEN cc.IS_LIVE_OUT=1 THEN 'CC live-out' ELSE 'CC live-in' END AS side\n  FROM BA_VIEWS.SALES_SILVER.CONTRACTS c\n  JOIN bridge b ON b.ID = c.ID\n  JOIN BA_VIEWS.SALES_SILVER.CONTRACTS cc ON cc.ID = b.CC_CONTRACT_ID\n  WHERE c.CONTRACT_TYPE='MV' AND c.FAKE=FALSE AND UPPER(c.CONTRACT_STATUS)='ACTIVE'\n    AND COALESCE(c.HOUSEMAID_ID IN (SELECT ID FROM oth),FALSE)=FALSE\n  QUALIFY ROW_NUMBER() OVER (PARTITION BY c.HOUSEMAID_ID\n          ORDER BY cc.DATE_OF_TERMINATION DESC NULLS LAST)=1)\nSELECT CASE WHEN sw.side IS NOT NULL THEN sw.side\n            WHEN h.WAS_TRAVEL_ASSIST = 'Yes' THEN 'Travel Assist'\n            WHEN h.HOUSEMAID_TYPE='MAID_VISA' THEN 'MV'\n            WHEN h.ID IN (SELECT ERP_ID FROM ptc WHERE ERP_ID IS NOT NULL) THEN 'Part Time'\n            WHEN h.LIVE_OUT=1 THEN 'CC live-out' ELSE 'CC live-in' END AS product,\n       COUNT(*) AS maids,\n       ROUND(100.0*COUNT(*)/SUM(COUNT(*)) OVER (),1) AS pct\nFROM BA_VIEWS.HOUSEMAID_MANAGEMENT_SILVER.HOUSEMAIDS_INFO h\nLEFT JOIN switched sw ON sw.MAID_ID = h.ID\nWHERE h.STATUS NOT IN ('EMPLOYEMENT_TERMINATED','VISA_UNSUCCESSFUL','REJECTED','TRACKED',\n                       'PASSED_EXIT','IN_EXIT','UNREACHABLE_AFTER_EXIT','NO_SHOW','UNREACHABLE')\nGROUP BY 1 ORDER BY 2 DESC;"},
+];
+const uploadedQueries = {};
+
+function fmtPct(n){ return (Math.round(n*10)/10).toString().replace(/\.0$/,''); }
+function sumArr(arr){ return arr.reduce((a,b)=>a+b,0); }
+function checkSvg(){ return '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>'; }
+
+function showInner(name){
+  document.querySelectorAll('.inner-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.inner-page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('innertab-'+name).classList.add('active');
+  document.getElementById('innerpage-'+name).classList.add('active');
+}
+
+/* ============== Human Judgment ============== */
+function bucketRowHtml(idPrefix, i, arr, confirmed){
+  const b = BUCKETS[i];
+  const val = fmtPct(arr[i]);
+  return '<div class="hj-bucket-row"><label>'+b.label+'</label>'
+    + (confirmed
+        ? '<span class="hj-confirmed-value">'+val+'%</span>'
+        : '<div class="bucket-input"><input type="text" inputmode="decimal" value="'+val+'" data-id="'+idPrefix+'" data-idx="'+i+'" oninput="onHjInput(this)"><span class="pct">%</span></div>')
+    + '</div>';
+}
+function renderHjGroups(idPrefix, arr, confirmed){
+  let idx = 0;
+  return BUCKET_GROUPS.map(g=>{
+    let bodyHtml;
+    if(g.type==='single'){
+      bodyHtml = '';
+      for(let k=0;k<g.span;k++){ bodyHtml += bucketRowHtml(idPrefix, idx+k, arr, confirmed); }
+    } else {
+      const half = g.span/2;
+      let clientHtml='', maidHtml='';
+      for(let k=0;k<half;k++){ clientHtml += bucketRowHtml(idPrefix, idx+k, arr, confirmed); }
+      for(let k=half;k<g.span;k++){ maidHtml += bucketRowHtml(idPrefix, idx+k, arr, confirmed); }
+      bodyHtml = '<div class="hj-subcols">'
+        + '<div class="hj-subcol"><div class="hj-subcol-label client">Client</div>'+clientHtml+'</div>'
+        + '<div class="hj-subcol"><div class="hj-subcol-label maid">Maid</div>'+maidHtml+'</div>'
+        + '</div>';
+    }
+    idx += g.span;
+    return '<div class="hj-group type-'+g.type+'"><div class="hj-group-title">'+g.name+'</div>'+bodyHtml+'</div>';
+  }).join('');
+}
+function renderHj(){
+  document.getElementById('hjBody').innerHTML = HJ_DEPTS.map(r=>{
+    const total = sumArr(r.proposed);
+    const ok = Math.abs(total-100)<=0.1;
+    const actionsHtml = r.confirmed
+      ? '<span class="confirmed-badge">'+checkSvg()+'Confirmed</span><span class="edit-again-link" onclick="reopenHj(\''+r.id+'\')">Edit</span>'
+      : '<button class="link-btn" style="color:var(--accent);background:none;border:none;font-weight:600;cursor:pointer;font-size:14px;" id="hjConfirmBtn-'+r.id+'" onclick="confirmHj(\''+r.id+'\')"'+(ok?'':' disabled')+'>'+checkSvg()+' Confirm</button>';
+    return '<div class="hj-card'+(r.confirmed?' row-confirmed':'')+'">'
+      + '<div class="hj-card-head">'
+        + '<div><div class="hj-name">'+r.name+'</div><div class="hj-pil">'+r.pil+'</div></div>'
+        + '<div class="hj-spacer"></div>'
+        + '<span class="hj-total-pill '+(ok?'ok':'bad')+'" id="hjTotal-'+r.id+'">Total '+fmtPct(total)+'%</span>'
+        + actionsHtml
+      + '</div>'
+      + renderDeptInfoPanel(r.name)
+      + '<div class="hj-groups">'+renderHjGroups(r.id, r.proposed, r.confirmed)+'</div>'
+      + '</div>';
+  }).join('');
+}
+function renderDeptInfoPanel(name){
+  const info = DEPT_INFO[name];
+  if(!info) return '';
+  return '<div class="dept-info-panel" style="margin:0 18px 14px;">'
+    + '<div class="dept-info-row"><span class="dept-info-label">Driver</span><span class="dept-info-value">'+info.driver+'</span></div>'
+    + '<div class="dept-info-row"><span class="dept-info-label">Formula</span><span class="dept-info-value">'+info.formula+'</span></div>'
+    + '<div class="dept-info-row"><span class="dept-info-label">Lands in</span><span class="dept-info-value">'+info.lands+'</span></div>'
+    + '<div class="dept-info-row"><span class="dept-info-label">Owner</span><span class="dept-info-value">'+info.owner+'</span></div>'
+    + '</div>';
+}
+window.onHjInput = function(input){
+  const rec = HJ_DEPTS.find(x=>x.id===input.getAttribute('data-id')); if(!rec) return;
+  let v = parseFloat(input.value); if(isNaN(v)) v = 0;
+  v = Math.max(0, Math.min(100, v));
+  rec.proposed[parseInt(input.getAttribute('data-idx'))] = v;
+  const total = sumArr(rec.proposed);
+  const ok = Math.abs(total-100)<=0.1;
+  const totalEl = document.getElementById('hjTotal-'+rec.id);
+  if(totalEl){ totalEl.textContent = 'Total '+fmtPct(total)+'%'; totalEl.className = 'hj-total-pill '+(ok?'ok':'bad'); }
+  const btn = document.getElementById('hjConfirmBtn-'+rec.id);
+  if(btn) btn.disabled = !ok;
+};
+function confirmHj(id){
+  const rec = HJ_DEPTS.find(x=>x.id===id); if(!rec) return;
+  if(Math.abs(sumArr(rec.proposed)-100)>0.1) return;
+  rec.confirmed = true;
+  renderHj();
+  showToast('Confirmed — '+rec.name);
+}
+function reopenHj(id){
+  const rec = HJ_DEPTS.find(x=>x.id===id); if(!rec) return;
+  rec.confirmed = false;
+  renderHj();
+}
+
+/* ============== Fixed Formulas ============== */
+let ffOpenIndex = null;
+function renderFf(){
+  document.getElementById('ffBody').innerHTML = FF_DEPTS.map((d,i)=>{
+    const total = sumArr(d.proposed);
+    const sourceTag = d.source==='override'
+      ? '<span class="source-tag override">Manually overridden</span>'
+      : d.source==='manual'
+      ? '<span class="source-tag manual">No query yet — manual</span>'
+      : '<span class="source-tag system">System-computed (' + (d.query ? d.query : 'Allocation Method ' + d.construction) + ')</span>';
+    let rows = '<tr class="data-row">'
+      + '<td>'+d.name+'</td>'
+      + '<td>'+sourceTag+'</td>'
+      + '<td style="color:var(--ink-soft);">'+d.lastComputed+'</td>'
+      + '<td>'+fmtPct(total)+'%</td>'
+      + '<td><button class="link-btn" onclick="toggleFfEdit('+i+')">Edit</button></td>'
+      + '</tr>';
+    if(ffOpenIndex === i){
+      const infoHtml = DEPT_INFO[d.name]
+        ? renderDeptInfoPanel(d.name)
+        : '<div class="dept-info-panel"><span style="color:var(--ink-soft);font-size:12.5px;">Not yet documented in the data team\u2019s driver table.</span></div>';
+      rows += '<tr class="ff-detail-row"><td colspan="5">'
+        + infoHtml
+        + '<div class="hj-groups" style="padding:14px 0;">'+renderHjGroups('ff'+i, d.proposed, false)+'</div>'
+        + '<div class="ff-detail-actions">'
+          + '<span style="flex:1;font-size:13px;font-weight:700;" id="ffTotal-'+i+'">Total: '+fmtPct(total)+'%</span>'
+          + '<button class="btn btn-outline" onclick="toggleFfEdit('+i+')">Cancel</button>'
+          + '<button class="btn btn-solid" onclick="saveFf('+i+')">Save</button>'
+        + '</div>'
+        + '</td></tr>';
+    }
+    return rows;
+  }).join('');
+  document.getElementById('ffCount').textContent = 'Showing 1–'+FF_DEPTS.length+' of 59';
+}
+function toggleFfEdit(i){
+  ffOpenIndex = (ffOpenIndex === i) ? null : i;
+  renderFf();
+}
+document.addEventListener('input', function(e){
+  if(e.target.matches('input[data-id^="ff"]')){
+    const idPrefix = e.target.getAttribute('data-id');
+    const i = parseInt(idPrefix.replace('ff',''));
+    const idx = parseInt(e.target.getAttribute('data-idx'));
+    let v = parseFloat(e.target.value); if(isNaN(v)) v = 0;
+    v = Math.max(0, Math.min(100, v));
+    FF_DEPTS[i].proposed[idx] = v;
+    const totalEl = document.getElementById('ffTotal-'+i);
+    if(totalEl) totalEl.textContent = 'Total: '+fmtPct(sumArr(FF_DEPTS[i].proposed))+'%';
+  }
+});
+function saveFf(i){
+  const d = FF_DEPTS[i];
+  if(Math.abs(sumArr(d.proposed)-100)>0.1){ showToast('Total must be exactly 100% to save'); return; }
+  d.source = 'override';
+  d.construction = 'Manual override';
+  const today = new Date();
+  d.lastComputed = today.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});
+  ffOpenIndex = null;
+  renderFf();
+  showToast('Saved as manual override — '+d.name);
+}
+
+/* ============== Export Queries / Upload Results ============== */
+function openQueriesModal(){
+  const html = '<div class="modal-box-lg">'
+    + '<div class="modal-title-lg">Export Queries</div>'
+    + '<div class="modal-sub-lg">Run each query in Snowflake, then come back and upload its result under "Upload Results" — matched by this exact name.</div>'
+    + QUERIES.map(q=>
+        '<div class="query-row">'
+          + '<div class="query-row-head"><span class="query-row-name">'+q.name+'</span>'
+            + '<button class="btn btn-outline btn-sm" onclick="copyQuerySql(this, `'+q.sql.replace(/\\/g,'\\\\').replace(/`/g,'\\`').replace(/"/g,'&quot;').replace(/\$\{/g,'\\${')+'`)">Copy SQL</button></div>'
+          + '<div class="query-row-depts">'+q.desc+' — feeds: '+q.feeds+'</div>'
+          + '<div class="query-sql-box">'+q.sql+'</div>'
+        + '</div>'
+      ).join('')
+    + '<div style="display:flex;justify-content:flex-end;margin-top:10px;"><button class="btn btn-outline" onclick="closeFfModal()">Close</button></div>'
+    + '</div>';
+  showFfModal(html);
+}
+function copyQuerySql(btn, sql){
+  navigator.clipboard.writeText(sql).catch(()=>{});
+  const orig = btn.textContent;
+  btn.textContent = 'Copied';
+  setTimeout(()=>{ btn.textContent = orig; }, 1200);
+}
+function openUploadModal(){
+  const html = '<div class="modal-box-lg">'
+    + '<div class="modal-title-lg">Upload Results</div>'
+    + '<div class="modal-sub-lg">Upload one result file per query. Each file is matched to its query by name — rename the export if needed before uploading.</div>'
+    + QUERIES.map(q=>
+        '<div class="upload-row">'
+          + '<span class="upload-row-name">'+q.name+'</span>'
+          + '<span class="upload-row-status'+(uploadedQueries[q.name]?' done':'')+'" id="uploadStatus-'+q.name.replace(/\s/g,'')+'">'+(uploadedQueries[q.name] ? '✓ Uploaded '+uploadedQueries[q.name] : 'Not yet uploaded')+'</span>'
+          + '<button class="btn btn-outline btn-sm" onclick="simulateUpload(\''+q.name+'\')">Choose File</button>'
+        + '</div>'
+      ).join('')
+    + '<div style="display:flex;justify-content:flex-end;gap:10px;margin-top:14px;"><button class="btn btn-outline" onclick="closeFfModal()">Close</button><button class="btn btn-solid" onclick="applyUploads()">Apply Uploaded Results</button></div>'
+    + '</div>';
+  showFfModal(html);
+}
+function driverForQueryName(queryName){
+  const q = QUERIES.find(x=>x.name===queryName);
+  if(!q) return null;
+  return DRIVERS.find(d=>d.id===q.driverId) || null;
+}
+function recomputeDeptRow(d){
+  if(d.source === 'override') return false; // manual overrides are never touched by a result upload
+  const driver = d.query ? driverForQueryName(d.query) : null;
+  if(!driver) return false; // construction A / G / Own P&L / F have no query-driven recompute here
+  const ratio = driver.ratio;
+  switch(d.construction){
+    case 'B': d.proposed = constructionB(ratio, B.CLI_C_ONG, B.CLO_C_ONG); return true;
+    case 'C': d.proposed = constructionC(ratio); return true;
+    case 'D': d.proposed = constructionD(ratio, d.variant || 'default'); return true;
+    case 'E': d.proposed = constructionE(ratio); return true;
+    default: return false;
+  }
+}
+function simulateUpload(queryName){
+  const today = new Date().toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});
+  const driver = driverForQueryName(queryName);
+  if(driver && driver.mode === 'derived' && Object.keys(driver.counts).length === 2){
+    // Simulate a fresh count pull: perturb the two input counts a little, then re-derive the ratio.
+    const keys = Object.keys(driver.counts);
+    const perturbed = keys.map(k => Math.max(1, Math.round(driver.counts[k] * (1 + (Math.random()*0.06-0.03)))));
+    const newRatio = driverRounding(perturbed, driver.dp);
+    driver.pendingCounts = Object.fromEntries(keys.map((k,i)=>[k, perturbed[i]]));
+    driver.pendingRatio = newRatio;
+  }
+  uploadedQueries[queryName] = today;
+  const el = document.getElementById('uploadStatus-'+queryName.replace(/\s/g,''));
+  if(el){ el.textContent = '✓ Uploaded '+today; el.classList.add('done'); }
+}
+function applyUploads(){
+  const n = Object.keys(uploadedQueries).length;
+  if(n===0){ showToast('No results uploaded yet'); return; }
+  let recomputedCount = 0;
+  Object.keys(uploadedQueries).forEach(queryName=>{
+    const driver = driverForQueryName(queryName);
+    if(driver && driver.pendingRatio){
+      driver.ratio = driver.pendingRatio;
+      driver.counts = driver.pendingCounts;
+      delete driver.pendingRatio;
+      delete driver.pendingCounts;
+    }
+  });
+  const dateStr = new Date().toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});
+  FF_DEPTS.forEach(d=>{
+    if(d.query && uploadedQueries[d.query] && recomputeDeptRow(d)){
+      d.lastComputed = dateStr;
+      recomputedCount++;
+    }
+  });
+  closeFfModal();
+  renderFf();
+  showToast('Applied ' + n + ' uploaded result(s) — ' + recomputedCount + ' department row(s) recomputed, overrides untouched');
+}
+function showFfModal(innerHtml){
+  let overlay = document.getElementById('ffModalOverlay');
+  if(!overlay){
+    overlay = document.createElement('div');
+    overlay.id = 'ffModalOverlay';
+    overlay.className = 'modal-backdrop';
+    document.body.appendChild(overlay);
+  }
+  overlay.innerHTML = innerHtml;
+  overlay.classList.add('show');
+}
+function closeFfModal(){
+  const overlay = document.getElementById('ffModalOverlay');
+  if(overlay) overlay.classList.remove('show');
+}
+
+let toastTimer;
+function showToast(msg){
+  let t = document.getElementById('toast');
+  if(!t){
+    t = document.createElement('div');
+    t.id = 'toast';
+    t.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:#171a1f;color:#fff;padding:12px 20px;border-radius:10px;font-size:13.5px;font-weight:600;opacity:0;pointer-events:none;transition:all .25s ease;z-index:100;';
+    document.body.appendChild(t);
+  }
+  t.textContent = msg;
+  t.style.opacity = '1';
+  t.style.transform = 'translateX(-50%) translateY(0)';
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>{ t.style.opacity='0'; t.style.transform='translateX(-50%) translateY(20px)'; }, 3000);
+}
+
+renderHj();
+renderFf();
+
+
+/* ===================== Results ===================== */
+
+const RESULTS = {"All": {"people_priced": 888, "total_salary": 7670200.0, "bucket_total": [856226.665, 1896154.3132, 628378.9338, 1072773.678, 549837.81, 683702.7495, 208511.51620000007, 275176.707, 86090.29999999999, 230237.3672, 114102.98, 218516.185, 18801.735, 325493.58, 35991.565, 124143.91510000001], "bucket_tech": [550678.4450000001, 1286951.2063999998, 376996.097, 602685.124, 291122.85, 481872.24650000007, 115633.48800000001, 158126.93099999998, 51879.74, 155044.14940000002, 82029.08999999998, 104948.08, 14384.795, 132669.375, 22555.645, 68662.73769999998], "bucket_op": [305548.22, 609203.1068, 251382.8368, 470088.5540000001, 258714.96, 201830.503, 92878.02819999999, 117049.77600000001, 34210.56, 75193.21779999998, 32073.89, 113568.105, 4416.940000000001, 192824.205, 13435.92, 55481.1774], "allocated_to_products": 7324140.0, "founder": 119700.0, "ownpl": 185960.0, "weel": 40400.0, "auditing": 0, "unallocated": 0, "difference": 0.0, "by_product": {"MV \u2014 Maid Visa": {"total": 2752380.9782, "tech": 1837629.6513999999, "op": 914751.3267999999}, "CC Live-in": {"total": 2934693.1713, "tech": 1752676.3175, "op": 1182016.8538000002}, "CC Live-out": {"total": 800015.8904, "tech": 480684.30840000004, "op": 319331.582}, "Part Time": {"total": 676914.48, "tech": 334031.33999999997, "op": 342883.13999999996}, "Travel Assist": {"total": 160135.48010000002, "tech": 91218.38269999999, "op": 68917.0974}}, "by_stage": {"Onboarding": {"total": 2497941.5050000004, "tech": 1505280.1500000001, "op": 992661.355}, "Ongoing": {"total": 4826198.495, "tech": 2990959.8499999996, "op": 1835238.645}}}, "Expat": {"people_priced": 690, "total_salary": 5928800.0, "bucket_total": [639504.785, 1513187.2067999998, 457791.73420000006, 830268.878, 424073.26999999996, 525836.8555000001, 150098.9958, 215349.307, 65833.57999999999, 174263.01280000003, 78636.73999999999, 171483.725, 14880.855000000001, 259218.42, 26578.245000000003, 95234.3899], "bucket_tech": [411888.80499999993, 1009964.0, 277135.01100000006, 453679.824, 228174.81000000003, 367476.9825000001, 83225.774, 125120.531, 39326.91999999999, 122703.86500000002, 46695.55, 79938.81999999999, 11455.615000000002, 113756.71500000001, 16774.864999999998, 58921.91249999999], "bucket_op": [227615.97999999998, 503223.2068, 180656.7232, 376589.054, 195898.46000000002, 158359.87300000002, 66873.2218, 90228.77600000001, 26506.660000000003, 51559.14779999999, 31941.19, 91544.905, 3425.2400000000007, 145461.705, 9803.38, 36312.477399999996], "allocated_to_products": 5642240.0, "founder": 108000.0, "ownpl": 150960.0, "weel": 27600.0, "auditing": 0, "unallocated": 0, "difference": 0.0, "by_product": {"MV \u2014 Maid Visa": {"total": 2152691.9918, "tech": 1421852.805, "op": 730839.1868}, "CC Live-in": {"total": 2237970.7377, "tech": 1326466.6275000002, "op": 911504.1102}, "CC Live-out": {"total": 605544.8956, "tech": 370377.09, "op": 235167.80560000002}, "Part Time": {"total": 524219.74, "tech": 251846.7, "op": 272373.04}, "Travel Assist": {"total": 121812.6349, "tech": 75696.7775, "op": 46115.85739999999}}, "by_stage": {"Onboarding": {"total": 1857398.205, "tech": 1114677.35, "op": 742720.855}, "Ongoing": {"total": 3784841.795, "tech": 2331562.6500000004, "op": 1453279.145}}}, "Emirati": {"people_priced": 61, "total_salary": 544600.0, "bucket_total": [56493.9, 131990.0864, 38849.044, 82286.8, 37433.0, 34846.833999999995, 12032.256, 28229.4, 7302.200000000001, 13215.2444, 704.84, 26673.96, 1013.64, 30540.36, 2291.52, 10896.9152], "bucket_tech": [35297.8, 100557.0864, 19882.800000000003, 54582.8, 16266.900000000001, 29835.134000000002, 4744.7, 12459.4, 3969.2000000000003, 7420.7444000000005, 704.84, 20177.96, 745.24, 14134.06, 1423.92, 2797.4152], "bucket_op": [21196.1, 31433.0, 18966.244, 27704.0, 21166.1, 5011.7, 7287.556, 15770.0, 3333.0, 5794.5, 0.0, 6496.0, 268.4, 16406.3, 867.5999999999999, 8099.5], "allocated_to_products": 514800.0, "founder": 0, "ownpl": 17000.0, "weel": 12800.0, "auditing": 0, "unallocated": 0, "difference": 0.0, "by_product": {"MV \u2014 Maid Visa": {"total": 188483.9864, "tech": 135854.88640000002, "op": 52629.1}, "CC Live-in": {"total": 193415.678, "tech": 120567.634, "op": 72848.044}, "CC Live-out": {"total": 60779.1004, "tech": 28594.0444, "op": 32185.056}, "Part Time": {"total": 58932.8, "tech": 35762.1, "op": 23170.7}, "Travel Assist": {"total": 13188.4352, "tech": 4221.3351999999995, "op": 8967.1}}, "by_stage": {"Onboarding": {"total": 156120.4, "tech": 83035.40000000001, "op": 73085.0}, "Ongoing": {"total": 358679.6, "tech": 241964.6, "op": 116715.0}}}, "Overseas - Bank Transfer": {"people_priced": 80, "total_salary": 723700.0, "bucket_total": [93583.59999999999, 154937.2, 74757.81199999999, 106340.9, 53620.3, 70179.3, 25897.288, 20635.0, 7102.6, 21619.2, 34062.149999999994, 7441.650000000001, 1866.15, 27967.25, 3376.4, 15013.2], "bucket_tech": [54930.2, 118072.0, 41896.335999999996, 68538.5, 30202.3, 49774.5, 14760.363999999998, 14342.0, 4812.2, 12078.0, 33965.95, 3442.05, 1488.95, 3384.05, 2511.8, 4500.799999999999], "bucket_op": [38653.4, 36865.2, 32861.475999999995, 37802.4, 23418.0, 20404.8, 11136.923999999999, 6293.0, 2290.4, 9541.2, 96.2, 3999.6, 377.20000000000005, 24583.2, 864.5999999999999, 10512.4], "allocated_to_products": 718400.0, "founder": 5300.0, "ownpl": 0, "weel": 0, "auditing": 0, "unallocated": 0, "difference": 0.0, "by_product": {"MV \u2014 Maid Visa": {"total": 248520.8, "tech": 173002.2, "op": 75518.6}, "CC Live-in": {"total": 304898.312, "tech": 190411.636, "op": 114486.67599999999}, "CC Live-out": {"total": 75254.088, "tech": 45992.564, "op": 29261.524}, "Part Time": {"total": 71337.2, "tech": 42281.0, "op": 29056.2}, "Travel Assist": {"total": 18389.600000000002, "tech": 7012.599999999999, "op": 11377.0}}, "by_stage": {"Onboarding": {"total": 294266.3, "tech": 184568.09999999998, "op": 109698.2}, "Ongoing": {"total": 424133.7, "tech": 274131.9, "op": 150001.8}}}, "Overseas - International Transfer": {"people_priced": 57, "total_salary": 473100.0, "bucket_total": [66644.38, 96039.81999999999, 56980.3436, 53877.1, 34711.24, 52839.759999999995, 20482.9764, 10963.0, 5851.92, 21139.910000000003, 699.25, 12916.85, 1041.09, 7767.55, 3745.4, 2999.41], "bucket_tech": [48561.64, 58358.12, 38081.95, 25884.0, 16478.84, 34785.63, 12902.65, 6205.0, 3771.4199999999996, 12841.54, 662.75, 1389.25, 694.99, 1394.55, 1845.0600000000002, 2442.6099999999997], "bucket_op": [18082.739999999998, 37681.700000000004, 18898.393600000003, 27993.100000000002, 18232.4, 18054.129999999997, 7580.3264, 4758.0, 2080.5, 8298.369999999999, 36.5, 11527.6, 346.1, 6373.0, 1900.34, 556.8000000000001], "allocated_to_products": 448700.0, "founder": 6400.0, "ownpl": 18000.0, "weel": 0, "auditing": 0, "unallocated": 0, "difference": 0.0, "by_product": {"MV \u2014 Maid Visa": {"total": 162684.2, "tech": 106919.76000000001, "op": 55764.44}, "CC Live-in": {"total": 198408.4436, "tech": 115230.42, "op": 83178.0236}, "CC Live-out": {"total": 58437.8064, "tech": 35720.61, "op": 22717.1964}, "Part Time": {"total": 22424.74, "tech": 4141.54, "op": 18283.2}, "Travel Assist": {"total": 6744.8099999999995, "tech": 4287.67, "op": 2457.14}}, "by_stage": {"Onboarding": {"total": 190156.6, "tech": 122999.3, "op": 67157.3}, "Ongoing": {"total": 258543.4, "tech": 143300.7, "op": 115242.7}}}, "_total_people": 889};
+const BUCKET_LABELS = ["MV \u2014 Onboarding", "MV \u2014 Ongoing", "CC Live-in \u2014 Client \u00b7 Onb", "CC Live-in \u2014 Client \u00b7 Ong", "CC Live-in \u2014 Maid \u00b7 Onb", "CC Live-in \u2014 Maid \u00b7 Ong", "CC Live-out \u2014 Client \u00b7 Onb", "CC Live-out \u2014 Client \u00b7 Ong", "CC Live-out \u2014 Maid \u00b7 Onb", "CC Live-out \u2014 Maid \u00b7 Ong", "Part Time \u2014 Client \u00b7 Onb", "Part Time \u2014 Client \u00b7 Ong", "Part Time \u2014 Maid \u00b7 Onb", "Part Time \u2014 Maid \u00b7 Ong", "Travel Assist \u2014 Onboarding", "Travel Assist \u2014 Ongoing"];
+const TRANSACTIONS = {"All": {"normal": {"Accommodation Management": [0.0, 0.0, 0.0, 0.0, 29597.4, 98658.0, 0.0, 0.0, 10147.68, 0.0, 0.0, 0.0, 2536.92, 0.0, 0.0, 0.0], "AI Implementation": [5314.95, 12401.55, 2362.2, 5511.8, 2362.2, 5511.8, 590.55, 1377.95, 590.55, 1377.95, 196.85, 393.7, 196.85, 393.7, 236.22, 551.18], "Beirut Office Management": [1598.5, 3405.5, 1223.2, 2168.4, 1112.0, 1181.5, 417.0, 556.0, 166.8, 417.0, 180.7, 472.6, 27.8, 695.0, 41.7, 236.3], "Broadcasting": [2247.98, 11962.465, 9714.485, 5298.81, 5057.955, 29625.165, 2087.41, 1123.99, 240.855, 7305.935, 160.57, 2328.265, 0.0, 2007.125, 160.57, 963.42], "CC Delighters Chatbot": [0.0, 0.0, 0.0, 12089.7, 0.0, 0.0, 0.0, 3060.3, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "CC Live-in Client Management": [0.0, 0.0, 0.0, 31220.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "CC Live-in L1": [0.0, 0.0, 0.0, 82522.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "CC L1": [0.0, 0.0, 0.0, 69545.67599999999, 0.0, 0.0, 0.0, 15266.124, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "CC Live-in L2": [0.0, 0.0, 0.0, 118520.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "CC Live-In Maid Management": [0.0, 0.0, 0.0, 0.0, 0.0, 43835.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "CC Live-out Client Management": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 31220.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "CC Live-out L1": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 19128.6, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "CC Live-out L2": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 45520.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "CC Live-out Maid Management": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 83160.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "CC Long Term": [0.0, 0.0, 0.0, 28386.55, 0.0, 0.0, 0.0, 3508.45, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "CC Maid Offboarding": [0.0, 0.0, 0.0, 0.0, 0.0, 22292.13, 0.0, 0.0, 0.0, 5642.87, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "CC Maid Retention": [0.0, 0.0, 0.0, 0.0, 0.0, 16119.6, 0.0, 0.0, 0.0, 4080.4, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "CC Resolvers Chatbot": [0.0, 0.0, 0.0, 38376.0, 0.0, 0.0, 0.0, 8424.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "CC Sales": [0.0, 0.0, 142964.69040000002, 0.0, 0.0, 0.0, 83963.38960000001, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "CEO": [8491.5, 19813.5, 3774.0, 8806.0, 3774.0, 8806.0, 943.5, 2201.5, 943.5, 2201.5, 314.5, 629.0, 314.5, 629.0, 377.4, 880.6], "Chatbot & LLM Development": [29154.0, 44702.8, 25461.16, 38288.92, 15548.8, 15548.8, 5636.44, 8357.48, 3887.2, 3887.2, 0.0, 0.0, 0.0, 0.0, 1943.6, 1943.6], "Customer Operations Excellence": [2693.75, 2693.75, 2693.75, 2693.75, 2693.75, 2693.75, 2693.75, 2693.75, 2693.75, 2693.75, 2693.75, 2693.75, 2693.75, 2693.75, 2693.75, 2693.75], "ChatCC": [625.38, 6611.16, 1816.58, 2322.84, 8785.1, 4764.8, 595.6, 506.26, 476.48, 1191.2, 178.68, 506.26, 0.0, 774.28, 59.56, 565.82], "CSA & Trainers": [0.0, 0.0, 0.0, 109523.3, 0.0, 0.0, 0.0, 24041.7, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "Customer Experience": [0.0, 0.0, 17425.0, 17425.0, 17000.0, 17000.0, 3825.0, 3825.0, 4250.0, 4250.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "Cybersecurity": [0.0, 20256.0, 0.0, 8545.5, 0.0, 0.0, 0.0, 1582.5, 0.0, 0.0, 0.0, 633.0, 0.0, 0.0, 0.0, 633.0], "Data Analytics and Reporting": [55013.85, 128365.65, 24450.6, 57051.4, 24450.6, 57051.4, 6112.65, 14262.85, 6112.65, 14262.85, 1833.795, 4278.855, 1833.795, 4278.855, 2445.06, 5705.14], "DDC": [12183.525, 0.0, 10152.9375, 0.0, 0.0, 0.0, 3384.3125, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1353.725, 0.0], "Delighters L1": [0.0, 59249.3784, 0.0, 0.0, 0.0, 26550.429, 0.0, 0.0, 0.0, 5216.926399999999, 0.0, 0.0, 0.0, 0.0, 0.0, 2142.6661999999997], "Doctors": [0.0, 13600.86, 0.0, 0.0, 0.0, 6094.725, 0.0, 0.0, 0.0, 1197.56, 0.0, 0.0, 0.0, 0.0, 0.0, 491.8549999999999], "Doctors Chatbot": [0.0, 8948.52, 0.0, 0.0, 0.0, 4009.95, 0.0, 0.0, 0.0, 787.92, 0.0, 0.0, 0.0, 0.0, 0.0, 323.60999999999996], "Doctors L1": [0.0, 11411.493599999998, 0.0, 0.0, 0.0, 5113.641, 0.0, 0.0, 0.0, 1004.7855999999998, 0.0, 0.0, 0.0, 0.0, 0.0, 412.67979999999994], "Emirati Staff": [0.0, 78900.48, 0.0, 33286.14, 0.0, 0.0, 0.0, 6164.1, 0.0, 0.0, 0.0, 2465.64, 0.0, 0.0, 0.0, 2465.64], "Jira Administration": [3074.625, 7174.125, 1366.5, 3188.5, 1366.5, 3188.5, 341.625, 797.125, 341.625, 797.125, 113.875, 227.75, 113.875, 227.75, 136.65, 318.84999999999997], "Maid Onboarding": [0.0, 0.0, 0.0, 0.0, 40435.77, 0.0, 0.0, 0.0, 10186.11, 0.0, 0.0, 0.0, 823.12, 0.0, 0.0, 0.0], "Maid Payroll": [0.0, 24710.4, 0.0, 0.0, 0.0, 10424.7, 0.0, 0.0, 0.0, 1930.5, 0.0, 0.0, 0.0, 772.2, 0.0, 772.2], "Maid Recruitment (Maids.AT)": [0.0, 0.0, 0.0, 0.0, 148451.75, 0.0, 0.0, 0.0, 7813.25, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "Marketing": [310555.0, 0.0, 248444.0, 0.0, 31382.4, 0.0, 62111.0, 0.0, 1307.6, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "Money Collection": [0.0, 18233.6, 0.0, 7692.3, 0.0, 0.0, 0.0, 1424.5, 0.0, 0.0, 0.0, 569.8, 0.0, 0.0, 0.0, 569.8], "Money Control": [0.0, 63264.0, 0.0, 26689.5, 0.0, 0.0, 0.0, 4942.5, 0.0, 0.0, 0.0, 1977.0, 0.0, 0.0, 0.0, 1977.0], "MV Accounting Flow CX": [0.0, 65984.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "MV CX": [0.0, 56865.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "MV L1": [0.0, 140725.6, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "MV L2": [0.0, 116010.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "MV Maid Offboarding": [0.0, 27935.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "MV Product": [0.0, 70520.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "MV Resolvers Chatbot": [0.0, 47520.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "MV Sales": [73687.11, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "Office Staff Payroll": [3320.625, 7074.375, 2541.0000000000005, 4504.5, 2310.0, 2454.375, 866.25, 1155.0, 346.5, 866.25, 375.375, 981.75, 57.75, 1443.75, 86.625, 490.875], "Other Nationalities": [0.0, 0.0, 4710.0, 4710.0, 32970.0, 4710.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "Part Time Cleaner Management": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 270750.0, 0.0, 0.0], "Part Time Client Management": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 179150.0, 0.0, 0.0, 0.0, 0.0], "Part Time Sales": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 76825.6, 0.0, 0.0, 0.0, 0.0, 0.0], "Police and Control": [0.0, 47161.6, 0.0, 19896.3, 0.0, 0.0, 0.0, 3684.5, 0.0, 0.0, 0.0, 1473.8, 0.0, 0.0, 0.0, 1473.8], "PRO Services": [0.0, 70904.6, 0.0, 30543.52, 0.0, 0.0, 0.0, 5454.2, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 2181.68], "Procurement": [0.0, 34304.0, 0.0, 14472.0, 0.0, 0.0, 0.0, 2680.0, 0.0, 0.0, 0.0, 1072.0, 0.0, 0.0, 0.0, 1072.0], "R&D": [212206.5, 495148.5, 94314.0, 220066.0, 94314.0, 220066.0, 23578.5, 55016.5, 23578.5, 55016.5, 7859.5, 15719.0, 7859.5, 15719.0, 9431.4, 22006.6], "Risk": [0.0, 54316.8, 0.0, 22914.9, 0.0, 0.0, 0.0, 4243.5, 0.0, 0.0, 0.0, 1697.4, 0.0, 0.0, 0.0, 1697.4], "Staff Recruitment": [8068.4, 17189.2, 6174.08, 10944.96, 5612.8, 5963.6, 2104.8, 2806.4, 841.92, 2104.8, 912.08, 2385.44, 140.32, 3508.0, 210.48, 1192.72], "Taxi Logistics": [0.0, 0.0, 0.0, 0.0, 0.0, 27567.5, 0.0, 0.0, 0.0, 27567.5, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "Travel Assist Client Management": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 68910.0], "Travel Assist Sales": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 14084.71, 0.0], "Visa": [104371.75, 34722.5, 0.0, 0.0, 36152.25, 12050.75, 0.0, 0.0, 8987.000000000002, 3063.75, 0.0, 0.0, 817.0, 204.25, 2859.5, 1021.25], "Ziwo": [1002.7, 494.575, 2411.9, 1490.5, 128.725, 13.55, 799.45, 325.2, 6.775, 0.0, 0.0, 0.0, 0.0, 0.0, 81.3, 20.325], "AI Center of Excellence": [1187.5, 1187.5, 1187.5, 1187.5, 1187.5, 1187.5, 1187.5, 1187.5, 1187.5, 1187.5, 1187.5, 1187.5, 1187.5, 1187.5, 1187.5, 1187.5]}, "single": {"Accommodation Management": [0.0, 0.0, 0.0, 0.0, 2163.0, 7210.0, 0.0, 0.0, 741.6, 0.0, 0.0, 0.0, 185.4, 0.0, 0.0, 0.0], "Beirut Office Management": [690.0, 1470.0, 528.0000000000001, 936.0, 480.0, 510.0, 180.0, 240.0, 72.0, 180.0, 78.0, 204.0, 12.0, 300.0, 18.0, 102.0], "Broadcasting": [119.28, 634.74, 515.46, 281.16, 268.38, 1571.94, 110.76, 59.64, 12.78, 387.66, 8.52, 123.54, 0.0, 106.5, 8.52, 51.12], "CC Delighters Chatbot": [0.0, 0.0, 0.0, 5426.4, 0.0, 0.0, 0.0, 1373.6, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "CC Live-in L1": [0.0, 0.0, 0.0, 8200.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "CC Live-out L1": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1800.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "CC Sales": [0.0, 0.0, 2518.992, 0.0, 0.0, 0.0, 1479.4080000000001, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "ChatCC": [119.28, 1260.96, 346.48, 443.04, 1675.6, 908.8, 113.6, 96.56, 90.88, 227.2, 34.08, 96.56, 0.0, 147.68, 11.36, 107.92], "Data Analytics and Reporting": [1971.0, 4599.0, 876.0, 2044.0, 876.0, 2044.0, 219.0, 511.0, 219.0, 511.0, 65.7, 153.3, 65.7, 153.3, 87.6, 204.4], "Delighters L1": [0.0, 2607.6, 0.0, 0.0, 0.0, 1168.5, 0.0, 0.0, 0.0, 229.6, 0.0, 0.0, 0.0, 0.0, 0.0, 94.3], "Doctors Chatbot": [0.0, 4324.8, 0.0, 0.0, 0.0, 1938.0, 0.0, 0.0, 0.0, 380.8, 0.0, 0.0, 0.0, 0.0, 0.0, 156.39999999999998], "Emirati Staff": [0.0, 8192.0, 0.0, 3456.0, 0.0, 0.0, 0.0, 640.0, 0.0, 0.0, 0.0, 256.0, 0.0, 0.0, 0.0, 256.0], "Maid Payroll": [0.0, 1084.8, 0.0, 0.0, 0.0, 457.65, 0.0, 0.0, 0.0, 84.75, 0.0, 0.0, 0.0, 33.9, 0.0, 33.9], "Maid Recruitment (Maids.AT)": [0.0, 0.0, 0.0, 0.0, 6365.0, 0.0, 0.0, 0.0, 335.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "Marketing": [19760.0, 0.0, 15808.0, 0.0, 1996.8, 0.0, 3952.0, 0.0, 83.2, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "Money Collection": [0.0, 1084.8, 0.0, 457.65, 0.0, 0.0, 0.0, 84.75, 0.0, 0.0, 0.0, 33.9, 0.0, 0.0, 0.0, 33.9], "Money Control": [0.0, 1084.8, 0.0, 457.65, 0.0, 0.0, 0.0, 84.75, 0.0, 0.0, 0.0, 33.9, 0.0, 0.0, 0.0, 33.9], "MV Sales": [1014.9, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "Other Nationalities": [0.0, 0.0, 1140.0, 1140.0, 7980.0, 1140.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "Part Time Cleaner Management": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 6900.0, 0.0, 0.0], "Part Time Client Management": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 6000.0, 0.0, 0.0, 0.0, 0.0], "Part Time Sales": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 3800.0, 0.0, 0.0, 0.0, 0.0, 0.0], "Police and Control": [0.0, 3072.0, 0.0, 1296.0, 0.0, 0.0, 0.0, 240.0, 0.0, 0.0, 0.0, 96.0, 0.0, 0.0, 0.0, 96.0], "PRO Services": [0.0, 4699.5, 0.0, 2024.4, 0.0, 0.0, 0.0, 361.5, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 144.6], "R&D": [2835.0, 6615.0, 1260.0, 2940.0, 1260.0, 2940.0, 315.0, 735.0, 315.0, 735.0, 105.0, 210.0, 105.0, 210.0, 126.0, 293.99999999999994], "Risk": [0.0, 11264.0, 0.0, 4752.0, 0.0, 0.0, 0.0, 880.0, 0.0, 0.0, 0.0, 352.0, 0.0, 0.0, 0.0, 352.0], "Travel Assist Sales": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 86.7, 0.0], "Visa": [2598.435, 864.45, 0.0, 0.0, 900.045, 300.015, 0.0, 0.0, 223.74, 76.275, 0.0, 0.0, 20.34, 5.085, 71.19, 25.425], "Ziwo": [630.48, 310.98, 1516.56, 937.2, 80.94, 8.52, 502.68, 204.48, 4.26, 0.0, 0.0, 0.0, 0.0, 0.0, 51.12, 12.78]}}, "Expat": {"normal": {"Accommodation Management": [0.0, 0.0, 0.0, 0.0, 25754.4, 85848.0, 0.0, 0.0, 8830.08, 0.0, 0.0, 0.0, 2207.52, 0.0, 0.0, 0.0], "AI Implementation": [5314.95, 12401.55, 2362.2, 5511.8, 2362.2, 5511.8, 590.55, 1377.95, 590.55, 1377.95, 196.85, 393.7, 196.85, 393.7, 236.22, 551.18], "Beirut Office Management": [1598.5, 3405.5, 1223.2, 2168.4, 1112.0, 1181.5, 417.0, 556.0, 166.8, 417.0, 180.7, 472.6, 27.8, 695.0, 41.7, 236.3], "Broadcasting": [2247.98, 11962.465, 9714.485, 5298.81, 5057.955, 29625.165, 2087.41, 1123.99, 240.855, 7305.935, 160.57, 2328.265, 0.0, 2007.125, 160.57, 963.42], "CC Delighters Chatbot": [0.0, 0.0, 0.0, 12089.7, 0.0, 0.0, 0.0, 3060.3, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "CC Live-in Client Management": [0.0, 0.0, 0.0, 24370.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "CC Live-in L1": [0.0, 0.0, 0.0, 57784.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "CC L1": [0.0, 0.0, 0.0, 63887.675999999985, 0.0, 0.0, 0.0, 14024.124, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "CC Live-in L2": [0.0, 0.0, 0.0, 82920.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "CC Live-In Maid Management": [0.0, 0.0, 0.0, 0.0, 0.0, 42350.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "CC Live-out Client Management": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 24370.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "CC Live-out L1": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 10006.6, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "CC Live-out L2": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 40720.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "CC Live-out Maid Management": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 62090.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "CC Long Term": [0.0, 0.0, 0.0, 17261.55, 0.0, 0.0, 0.0, 2133.45, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "CC Maid Offboarding": [0.0, 0.0, 0.0, 0.0, 0.0, 18022.83, 0.0, 0.0, 0.0, 4562.17, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "CC Maid Retention": [0.0, 0.0, 0.0, 0.0, 0.0, 9432.36, 0.0, 0.0, 0.0, 2387.64, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "CC Resolvers Chatbot": [0.0, 0.0, 0.0, 28208.0, 0.0, 0.0, 0.0, 6192.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "CC Sales": [0.0, 0.0, 118508.64480000001, 0.0, 0.0, 0.0, 69600.31520000001, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "CEO": [5184.0, 12096.0, 2304.0, 5376.0, 2304.0, 5376.0, 576.0, 1344.0, 576.0, 1344.0, 192.0, 384.0, 192.0, 384.0, 230.4, 537.6], "Chatbot & LLM Development": [29154.0, 44702.8, 25461.16, 38288.92, 15548.8, 15548.8, 5636.44, 8357.48, 3887.2, 3887.2, 0.0, 0.0, 0.0, 0.0, 1943.6, 1943.6], "Customer Operations Excellence": [2693.75, 2693.75, 2693.75, 2693.75, 2693.75, 2693.75, 2693.75, 2693.75, 2693.75, 2693.75, 2693.75, 2693.75, 2693.75, 2693.75, 2693.75, 2693.75], "ChatCC": [625.38, 6611.16, 1816.58, 2322.84, 8785.1, 4764.8, 595.6, 506.26, 476.48, 1191.2, 178.68, 506.26, 0.0, 774.28, 59.56, 565.82], "CSA & Trainers": [0.0, 0.0, 0.0, 83529.3, 0.0, 0.0, 0.0, 18335.7, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "Customer Experience": [0.0, 0.0, 17425.0, 17425.0, 17000.0, 17000.0, 3825.0, 3825.0, 4250.0, 4250.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "Cybersecurity": [0.0, 14464.0, 0.0, 6102.0, 0.0, 0.0, 0.0, 1130.0, 0.0, 0.0, 0.0, 452.0, 0.0, 0.0, 0.0, 452.0], "Data Analytics and Reporting": [45779.85, 106819.65, 20346.6, 47475.4, 20346.6, 47475.4, 5086.65, 11868.85, 5086.65, 11868.85, 1525.995, 3560.655, 1525.995, 3560.655, 2034.66, 4747.539999999999], "DDC": [6693.525, 0.0, 5577.9375, 0.0, 0.0, 0.0, 1859.3125, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 743.725, 0.0], "Delighters L1": [0.0, 44443.29840000001, 0.0, 0.0, 0.0, 19915.629, 0.0, 0.0, 0.0, 3913.2464, 0.0, 0.0, 0.0, 0.0, 0.0, 1607.2262], "Doctors": [0.0, 9858.0, 0.0, 0.0, 0.0, 4417.5, 0.0, 0.0, 0.0, 868.0, 0.0, 0.0, 0.0, 0.0, 0.0, 356.5], "Doctors Chatbot": [0.0, 8948.52, 0.0, 0.0, 0.0, 4009.95, 0.0, 0.0, 0.0, 787.92, 0.0, 0.0, 0.0, 0.0, 0.0, 323.60999999999996], "Doctors L1": [0.0, 9770.6136, 0.0, 0.0, 0.0, 4378.341, 0.0, 0.0, 0.0, 860.3056, 0.0, 0.0, 0.0, 0.0, 0.0, 353.33979999999997], "Emirati Staff": [0.0, 52020.48, 0.0, 21946.14, 0.0, 0.0, 0.0, 4064.1, 0.0, 0.0, 0.0, 1625.64, 0.0, 0.0, 0.0, 1625.64], "Jira Administration": [2463.75, 5748.75, 1095.0, 2555.0, 1095.0, 2555.0, 273.75, 638.75, 273.75, 638.75, 91.25, 182.5, 91.25, 182.5, 109.5, 255.5], "Maid Onboarding": [0.0, 0.0, 0.0, 0.0, 30221.7, 0.0, 0.0, 0.0, 7613.1, 0.0, 0.0, 0.0, 615.2, 0.0, 0.0, 0.0], "Maid Payroll": [0.0, 15200.0, 0.0, 0.0, 0.0, 6412.5, 0.0, 0.0, 0.0, 1187.5, 0.0, 0.0, 0.0, 475.0, 0.0, 475.0], "Maid Recruitment (Maids.AT)": [0.0, 0.0, 0.0, 0.0, 129831.75, 0.0, 0.0, 0.0, 6833.25, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "Marketing": [244197.5, 0.0, 195358.0, 0.0, 24676.8, 0.0, 48839.5, 0.0, 1028.2, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "Money Collection": [0.0, 14752.0, 0.0, 6223.5, 0.0, 0.0, 0.0, 1152.5, 0.0, 0.0, 0.0, 461.0, 0.0, 0.0, 0.0, 461.0], "Money Control": [0.0, 47968.0, 0.0, 20236.5, 0.0, 0.0, 0.0, 3747.5, 0.0, 0.0, 0.0, 1499.0, 0.0, 0.0, 0.0, 1499.0], "MV Accounting Flow CX": [0.0, 39984.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "MV CX": [0.0, 36165.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "MV L1": [0.0, 87645.6, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "MV L2": [0.0, 78610.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "MV Maid Offboarding": [0.0, 22585.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "MV Product": [0.0, 43520.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "MV Resolvers Chatbot": [0.0, 47520.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "MV Sales": [65848.67000000001, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "Office Staff Payroll": [2098.75, 4471.25, 1606.0, 2847.0, 1460.0, 1551.25, 547.5, 730.0, 219.0, 547.5, 237.25, 620.5, 36.5, 912.5, 54.75, 310.25], "Other Nationalities": [0.0, 0.0, 4710.0, 4710.0, 32970.0, 4710.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "Part Time Cleaner Management": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 222250.0, 0.0, 0.0], "Part Time Client Management": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 137450.0, 0.0, 0.0, 0.0, 0.0], "Part Time Sales": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 66825.6, 0.0, 0.0, 0.0, 0.0, 0.0], "Police and Control": [0.0, 47161.6, 0.0, 19896.3, 0.0, 0.0, 0.0, 3684.5, 0.0, 0.0, 0.0, 1473.8, 0.0, 0.0, 0.0, 1473.8], "PRO Services": [0.0, 54004.6, 0.0, 23263.52, 0.0, 0.0, 0.0, 4154.2, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1661.68], "Procurement": [0.0, 30784.0, 0.0, 12987.0, 0.0, 0.0, 0.0, 2405.0, 0.0, 0.0, 0.0, 962.0, 0.0, 0.0, 0.0, 962.0], "R&D": [146677.5, 342247.5, 65190.0, 152110.0, 65190.0, 152110.0, 16297.5, 38027.5, 16297.5, 38027.5, 5432.5, 10865.0, 5432.5, 10865.0, 6519.0, 15211.0], "Risk": [0.0, 39532.8, 0.0, 16677.9, 0.0, 0.0, 0.0, 3088.5, 0.0, 0.0, 0.0, 1235.4, 0.0, 0.0, 0.0, 1235.4], "Staff Recruitment": [6377.9, 13587.7, 4880.4800000000005, 8651.76, 4436.8, 4714.1, 1663.8, 2218.4, 665.52, 1663.8, 720.98, 1885.64, 110.92, 2773.0, 166.38, 942.82], "Taxi Logistics": [0.0, 0.0, 0.0, 0.0, 0.0, 24975.0, 0.0, 0.0, 0.0, 24975.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "Travel Assist Client Management": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 64410.0], "Travel Assist Sales": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 11342.27, 0.0], "Visa": [78617.35, 26154.5, 0.0, 0.0, 27231.45, 9077.15, 0.0, 0.0, 6769.4, 2307.75, 0.0, 0.0, 615.4, 153.85, 2153.9, 769.25], "Ziwo": [1002.7, 494.575, 2411.9, 1490.5, 128.725, 13.55, 799.45, 325.2, 6.775, 0.0, 0.0, 0.0, 0.0, 0.0, 81.3, 20.325], "AI Center of Excellence": [1187.5, 1187.5, 1187.5, 1187.5, 1187.5, 1187.5, 1187.5, 1187.5, 1187.5, 1187.5, 1187.5, 1187.5, 1187.5, 1187.5, 1187.5, 1187.5]}, "single": {"Accommodation Management": [0.0, 0.0, 0.0, 0.0, 2163.0, 7210.0, 0.0, 0.0, 741.6, 0.0, 0.0, 0.0, 185.4, 0.0, 0.0, 0.0], "Beirut Office Management": [690.0, 1470.0, 528.0000000000001, 936.0, 480.0, 510.0, 180.0, 240.0, 72.0, 180.0, 78.0, 204.0, 12.0, 300.0, 18.0, 102.0], "Broadcasting": [119.28, 634.74, 515.46, 281.16, 268.38, 1571.94, 110.76, 59.64, 12.78, 387.66, 8.52, 123.54, 0.0, 106.5, 8.52, 51.12], "CC Delighters Chatbot": [0.0, 0.0, 0.0, 5426.4, 0.0, 0.0, 0.0, 1373.6, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "CC Live-in L1": [0.0, 0.0, 0.0, 8200.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "CC Live-out L1": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1800.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "CC Sales": [0.0, 0.0, 2518.992, 0.0, 0.0, 0.0, 1479.4080000000001, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "ChatCC": [119.28, 1260.96, 346.48, 443.04, 1675.6, 908.8, 113.6, 96.56, 90.88, 227.2, 34.08, 96.56, 0.0, 147.68, 11.36, 107.92], "Delighters L1": [0.0, 2607.6, 0.0, 0.0, 0.0, 1168.5, 0.0, 0.0, 0.0, 229.6, 0.0, 0.0, 0.0, 0.0, 0.0, 94.3], "Doctors Chatbot": [0.0, 4324.8, 0.0, 0.0, 0.0, 1938.0, 0.0, 0.0, 0.0, 380.8, 0.0, 0.0, 0.0, 0.0, 0.0, 156.39999999999998], "Emirati Staff": [0.0, 3968.0, 0.0, 1674.0, 0.0, 0.0, 0.0, 310.0, 0.0, 0.0, 0.0, 124.0, 0.0, 0.0, 0.0, 124.0], "Maid Payroll": [0.0, 1084.8, 0.0, 0.0, 0.0, 457.65, 0.0, 0.0, 0.0, 84.75, 0.0, 0.0, 0.0, 33.9, 0.0, 33.9], "Maid Recruitment (Maids.AT)": [0.0, 0.0, 0.0, 0.0, 6365.0, 0.0, 0.0, 0.0, 335.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "Marketing": [19760.0, 0.0, 15808.0, 0.0, 1996.8, 0.0, 3952.0, 0.0, 83.2, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "Money Collection": [0.0, 1084.8, 0.0, 457.65, 0.0, 0.0, 0.0, 84.75, 0.0, 0.0, 0.0, 33.9, 0.0, 0.0, 0.0, 33.9], "Money Control": [0.0, 1084.8, 0.0, 457.65, 0.0, 0.0, 0.0, 84.75, 0.0, 0.0, 0.0, 33.9, 0.0, 0.0, 0.0, 33.9], "MV Sales": [1014.9, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "Other Nationalities": [0.0, 0.0, 1140.0, 1140.0, 7980.0, 1140.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "Part Time Cleaner Management": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 6900.0, 0.0, 0.0], "Part Time Client Management": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 6000.0, 0.0, 0.0, 0.0, 0.0], "PRO Services": [0.0, 4699.5, 0.0, 2024.4, 0.0, 0.0, 0.0, 361.5, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 144.6], "Risk": [0.0, 11264.0, 0.0, 4752.0, 0.0, 0.0, 0.0, 880.0, 0.0, 0.0, 0.0, 352.0, 0.0, 0.0, 0.0, 352.0], "Travel Assist Sales": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 86.7, 0.0], "Visa": [2598.435, 864.45, 0.0, 0.0, 900.045, 300.015, 0.0, 0.0, 223.74, 76.275, 0.0, 0.0, 20.34, 5.085, 71.19, 25.425], "Ziwo": [630.48, 310.98, 1516.56, 937.2, 80.94, 8.52, 502.68, 204.48, 4.26, 0.0, 0.0, 0.0, 0.0, 0.0, 51.12, 12.78]}}, "Emirati": {"normal": {"Accommodation Management": [0.0, 0.0, 0.0, 0.0, 1701.0, 5670.0, 0.0, 0.0, 583.2, 0.0, 0.0, 0.0, 145.8, 0.0, 0.0, 0.0], "CC Live-in L1": [0.0, 0.0, 0.0, 8156.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "CC Live-in L2": [0.0, 0.0, 0.0, 30900.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "CC Live-out L1": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 3804.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "CC Live-out Maid Management": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 12400.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "CC Maid Offboarding": [0.0, 0.0, 0.0, 0.0, 0.0, 2912.7, 0.0, 0.0, 0.0, 737.3, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "CC Sales": [0.0, 0.0, 3062.304, 0.0, 0.0, 0.0, 1798.496, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "CSA & Trainers": [0.0, 0.0, 0.0, 15006.0, 0.0, 0.0, 0.0, 3294.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "Data Analytics and Reporting": [3348.0, 7812.0, 1488.0, 3472.0, 1488.0, 3472.0, 372.0, 868.0, 372.0, 868.0, 111.6, 260.4, 111.6, 260.4, 148.8, 347.2], "DDC": [2475.0, 0.0, 2062.5, 0.0, 0.0, 0.0, 687.5, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 275.0, 0.0], "Doctors": [0.0, 2798.4, 0.0, 0.0, 0.0, 1254.0, 0.0, 0.0, 0.0, 246.4, 0.0, 0.0, 0.0, 0.0, 0.0, 101.2], "Emirati Staff": [0.0, 4480.0, 0.0, 1890.0, 0.0, 0.0, 0.0, 350.0, 0.0, 0.0, 0.0, 140.0, 0.0, 0.0, 0.0, 140.0], "Maid Onboarding": [0.0, 0.0, 0.0, 0.0, 9824.999999999998, 0.0, 0.0, 0.0, 2475.0, 0.0, 0.0, 0.0, 200.0, 0.0, 0.0, 0.0], "Marketing": [18810.0, 0.0, 15048.0, 0.0, 1900.8, 0.0, 3762.0, 0.0, 79.2, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "Money Control": [0.0, 4160.0, 0.0, 1755.0, 0.0, 0.0, 0.0, 325.0, 0.0, 0.0, 0.0, 130.0, 0.0, 0.0, 0.0, 130.0], "MV CX": [0.0, 10600.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "MV L1": [0.0, 13780.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "MV L2": [0.0, 18200.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "MV Maid Offboarding": [0.0, 3650.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "MV Product": [0.0, 9100.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "MV Sales": [1233.8, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "Part Time Cleaner Management": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 20300.0, 0.0, 0.0], "Part Time Client Management": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 31800.0, 0.0, 0.0, 0.0, 0.0], "Part Time Sales": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 10000.0, 0.0, 0.0, 0.0, 0.0, 0.0], "PRO Services": [0.0, 4550.0, 0.0, 1960.0, 0.0, 0.0, 0.0, 350.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 140.0], "Procurement": [0.0, 3520.0, 0.0, 1485.0, 0.0, 0.0, 0.0, 275.0, 0.0, 0.0, 0.0, 110.0, 0.0, 0.0, 0.0, 110.0], "R&D": [14377.5, 33547.5, 6390.0, 14910.0, 6390.0, 14910.0, 1597.5, 3727.5, 1597.5, 3727.5, 532.5, 1065.0, 532.5, 1065.0, 639.0, 1491.0], "Risk": [0.0, 3776.0, 0.0, 1593.0, 0.0, 0.0, 0.0, 295.0, 0.0, 0.0, 0.0, 118.0, 0.0, 0.0, 0.0, 118.0], "Travel Assist Client Management": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 4500.0], "Travel Assist Sales": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 105.4, 0.0], "Visa": [3117.1, 1037.0, 0.0, 0.0, 1079.7, 359.9, 0.0, 0.0, 268.40000000000003, 91.5, 0.0, 0.0, 24.4, 6.1, 85.4, 30.5], "Delighters L1": [0.0, 1640.88, 0.0, 0.0, 0.0, 735.3, 0.0, 0.0, 0.0, 144.48, 0.0, 0.0, 0.0, 0.0, 0.0, 59.33999999999999], "Doctors L1": [0.0, 1640.88, 0.0, 0.0, 0.0, 735.3, 0.0, 0.0, 0.0, 144.48, 0.0, 0.0, 0.0, 0.0, 0.0, 59.33999999999999]}, "single": {"Data Analytics and Reporting": [1971.0, 4599.0, 876.0, 2044.0, 876.0, 2044.0, 219.0, 511.0, 219.0, 511.0, 65.7, 153.3, 65.7, 153.3, 87.6, 204.4], "Police and Control": [0.0, 3072.0, 0.0, 1296.0, 0.0, 0.0, 0.0, 240.0, 0.0, 0.0, 0.0, 96.0, 0.0, 0.0, 0.0, 96.0]}}, "Overseas - Bank Transfer": {"normal": {"CC Live-in L1": [0.0, 0.0, 0.0, 7562.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "CC Live-out L1": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 3338.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "CC Live-out Maid Management": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 5700.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "CC Long Term": [0.0, 0.0, 0.0, 11125.0, 0.0, 0.0, 0.0, 1375.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "CC Maid Offboarding": [0.0, 0.0, 0.0, 0.0, 0.0, 1356.6, 0.0, 0.0, 0.0, 343.4, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "CC Resolvers Chatbot": [0.0, 0.0, 0.0, 10168.0, 0.0, 0.0, 0.0, 2232.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "CEO": [2619.0, 6111.0, 1164.0, 2716.0, 1164.0, 2716.0, 291.0, 679.0, 291.0, 679.0, 97.0, 194.0, 97.0, 194.0, 116.4, 271.6], "CSA & Trainers": [0.0, 0.0, 0.0, 10988.0, 0.0, 0.0, 0.0, 2412.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "Cybersecurity": [0.0, 5792.0, 0.0, 2443.5, 0.0, 0.0, 0.0, 452.5, 0.0, 0.0, 0.0, 181.0, 0.0, 0.0, 0.0, 181.0], "Data Analytics and Reporting": [3699.0, 8631.0, 1644.0, 3836.0, 1644.0, 3836.0, 411.0, 959.0, 411.0, 959.0, 123.3, 287.7, 123.3, 287.7, 164.4, 383.6], "DDC": [3015.0, 0.0, 2512.5, 0.0, 0.0, 0.0, 837.5, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 335.0, 0.0], "Delighters L1": [0.0, 8840.4, 0.0, 0.0, 0.0, 3961.5, 0.0, 0.0, 0.0, 778.4, 0.0, 0.0, 0.0, 0.0, 0.0, 319.7], "Emirati Staff": [0.0, 15872.0, 0.0, 6696.0, 0.0, 0.0, 0.0, 1240.0, 0.0, 0.0, 0.0, 496.0, 0.0, 0.0, 0.0, 496.0], "Jira Administration": [610.875, 1425.375, 271.5, 633.5, 271.5, 633.5, 67.875, 158.375, 67.875, 158.375, 22.625, 45.25, 22.625, 45.25, 27.15, 63.35], "Maid Payroll": [0.0, 870.4, 0.0, 0.0, 0.0, 367.2, 0.0, 0.0, 0.0, 68.0, 0.0, 0.0, 0.0, 27.2, 0.0, 27.2], "Maid Recruitment (Maids.AT)": [0.0, 0.0, 0.0, 0.0, 15105.0, 0.0, 0.0, 0.0, 795.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "Marketing": [31017.5, 0.0, 24814.0, 0.0, 3134.4, 0.0, 6203.5, 0.0, 130.6, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "Money Collection": [0.0, 3481.6, 0.0, 1468.8, 0.0, 0.0, 0.0, 272.0, 0.0, 0.0, 0.0, 108.8, 0.0, 0.0, 0.0, 108.8], "Money Control": [0.0, 11136.0, 0.0, 4698.0, 0.0, 0.0, 0.0, 870.0, 0.0, 0.0, 0.0, 348.0, 0.0, 0.0, 0.0, 348.0], "MV Accounting Flow CX": [0.0, 7200.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "MV L1": [0.0, 17600.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "MV L2": [0.0, 11700.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "MV Maid Offboarding": [0.0, 1700.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "Office Staff Payroll": [520.375, 1108.625, 398.2, 705.9, 362.0, 384.625, 135.75, 181.0, 54.3, 135.75, 58.825, 153.85, 9.05, 226.25, 13.575, 76.925], "Part Time Cleaner Management": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 4500.0, 0.0, 0.0], "Part Time Client Management": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 4800.0, 0.0, 0.0, 0.0, 0.0], "PRO Services": [0.0, 12350.0, 0.0, 5320.0, 0.0, 0.0, 0.0, 950.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 380.0], "R&D": [26230.5, 61204.5, 11658.0, 27202.0, 11658.0, 27202.0, 2914.5, 6800.5, 2914.5, 6800.5, 971.5, 1943.0, 971.5, 1943.0, 1165.8, 2720.2], "Risk": [0.0, 8704.0, 0.0, 3672.0, 0.0, 0.0, 0.0, 680.0, 0.0, 0.0, 0.0, 272.0, 0.0, 0.0, 0.0, 272.0], "Staff Recruitment": [517.5, 1102.5, 396.0, 702.0, 360.0, 382.5, 135.0, 180.0, 54.0, 135.0, 58.5, 153.0, 9.0, 225.0, 13.5, 76.5], "Taxi Logistics": [0.0, 0.0, 0.0, 0.0, 0.0, 1850.0, 0.0, 0.0, 0.0, 1850.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "Visa": [14205.8, 4726.0, 0.0, 0.0, 4920.6, 1640.2, 0.0, 0.0, 1223.2, 417.0, 0.0, 0.0, 111.2, 27.8, 389.2, 139.0], "CC Sales": [0.0, 0.0, 1428.2856000000002, 0.0, 0.0, 0.0, 838.8344000000002, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "MV Sales": [2266.44, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "Travel Assist Sales": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 2266.44, 0.0]}, "single": {"Emirati Staff": [0.0, 4224.0, 0.0, 1782.0, 0.0, 0.0, 0.0, 330.0, 0.0, 0.0, 0.0, 132.0, 0.0, 0.0, 0.0, 132.0], "Part Time Sales": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 3800.0, 0.0, 0.0, 0.0, 0.0, 0.0]}}, "Overseas - International Transfer": {"normal": {"Accommodation Management": [0.0, 0.0, 0.0, 0.0, 2142.0, 7140.0, 0.0, 0.0, 734.4, 0.0, 0.0, 0.0, 183.6, 0.0, 0.0, 0.0], "CC Live-in Client Management": [0.0, 0.0, 0.0, 6850.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "CC L1": [0.0, 0.0, 0.0, 5658.0, 0.0, 0.0, 0.0, 1242.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "CC Live-in L1": [0.0, 0.0, 0.0, 9020.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "CC Live-in L2": [0.0, 0.0, 0.0, 4700.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "CC Live-In Maid Management": [0.0, 0.0, 0.0, 0.0, 0.0, 1485.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "CC Live-out Client Management": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 6850.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "CC Live-out L1": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1980.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "CC Live-out L2": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 4800.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "CC Live-out Maid Management": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 2970.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "CC Maid Retention": [0.0, 0.0, 0.0, 0.0, 0.0, 6687.24, 0.0, 0.0, 0.0, 1692.76, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "CC Sales": [0.0, 0.0, 19965.456000000002, 0.0, 0.0, 0.0, 11725.744, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "CEO": [688.5, 1606.5, 306.0, 714.0, 306.0, 714.0, 76.5, 178.5, 76.5, 178.5, 25.5, 51.0, 25.5, 51.0, 30.6, 71.4], "Data Analytics and Reporting": [2187.0, 5103.0, 972.0, 2268.0, 972.0, 2268.0, 243.0, 567.0, 243.0, 567.0, 72.9, 170.1, 72.9, 170.1, 97.2, 226.8], "Delighters L1": [0.0, 4324.8, 0.0, 0.0, 0.0, 1938.0, 0.0, 0.0, 0.0, 380.8, 0.0, 0.0, 0.0, 0.0, 0.0, 156.39999999999998], "Doctors": [0.0, 944.46, 0.0, 0.0, 0.0, 423.225, 0.0, 0.0, 0.0, 83.16, 0.0, 0.0, 0.0, 0.0, 0.0, 34.154999999999994], "Emirati Staff": [0.0, 6528.0, 0.0, 2754.0, 0.0, 0.0, 0.0, 510.0, 0.0, 0.0, 0.0, 204.0, 0.0, 0.0, 0.0, 204.0], "Maid Onboarding": [0.0, 0.0, 0.0, 0.0, 389.07, 0.0, 0.0, 0.0, 98.01, 0.0, 0.0, 0.0, 7.92, 0.0, 0.0, 0.0], "Maid Payroll": [0.0, 8640.0, 0.0, 0.0, 0.0, 3645.0, 0.0, 0.0, 0.0, 675.0, 0.0, 0.0, 0.0, 270.0, 0.0, 270.0], "Maid Recruitment (Maids.AT)": [0.0, 0.0, 0.0, 0.0, 3515.0, 0.0, 0.0, 0.0, 185.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "Marketing": [16530.0, 0.0, 13224.0, 0.0, 1670.4, 0.0, 3306.0, 0.0, 69.6, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "MV Accounting Flow CX": [0.0, 18800.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "MV CX": [0.0, 10100.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "MV L1": [0.0, 21700.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "MV L2": [0.0, 7500.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "MV Product": [0.0, 17900.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "MV Sales": [4338.2, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "Office Staff Payroll": [701.5, 1494.5, 536.8000000000001, 951.6, 488.0, 518.5, 183.0, 244.0, 73.2, 183.0, 79.3, 207.4, 12.2, 305.0, 18.3, 103.7], "Part Time Cleaner Management": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 23700.0, 0.0, 0.0], "R&D": [24921.0, 58149.0, 11076.0, 25844.0, 11076.0, 25844.0, 2769.0, 6461.0, 2769.0, 6461.0, 923.0, 1846.0, 923.0, 1846.0, 1107.6, 2584.3999999999996], "Risk": [0.0, 2304.0, 0.0, 972.0, 0.0, 0.0, 0.0, 180.0, 0.0, 0.0, 0.0, 72.0, 0.0, 0.0, 0.0, 72.0], "Staff Recruitment": [1173.0, 2499.0, 897.6, 1591.2, 816.0, 867.0, 306.0, 408.0, 122.4, 306.0, 132.6, 346.8, 20.4, 510.0, 30.6, 173.4], "Taxi Logistics": [0.0, 0.0, 0.0, 0.0, 0.0, 742.5, 0.0, 0.0, 0.0, 742.5, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "Travel Assist Sales": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 370.6, 0.0], "Visa": [8431.5, 2805.0, 0.0, 0.0, 2920.5, 973.5, 0.0, 0.0, 726.0, 247.5, 0.0, 0.0, 66.0, 16.5, 231.0, 82.5], "Part Time Client Management": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 5100.0, 0.0, 0.0, 0.0, 0.0]}, "single": {"R&D": [2835.0, 6615.0, 1260.0, 2940.0, 1260.0, 2940.0, 315.0, 735.0, 315.0, 735.0, 105.0, 210.0, 105.0, 210.0, 126.0, 293.99999999999994]}}};
+const CAT_LABELS = {
+  'All': 'All Employees',
+  'Expat': 'Expat',
+  'Emirati': 'Emirati',
+  'Overseas - Bank Transfer': 'Overseas – Bank Transfer',
+  'Overseas - International Transfer': 'Overseas – International Transfer',
+};
+
+function fmtAED(n){
+  return Math.round(n).toLocaleString('en-US') + ' AED';
+}
+function pct1(n){ return (Math.round(n*10)/10).toString().replace(/\.0$/,''); }
+
+let hasRun = false;
+let currentCat = 'All';
+
+function runAlgorithm(){
+  const monthLabel = document.getElementById('monthSelect').selectedOptions[0].textContent;
+  hasRun = true;
+  document.getElementById('resultsArea').style.display = 'block';
+  document.getElementById('emptyState').style.display = 'none';
+  const now = new Date();
+  document.getElementById('runStatus').textContent = 'Last run: just now, for ' + monthLabel;
+  renderCat(currentCat);
+  showToast('Calculation complete for ' + monthLabel);
+}
+
+function showCat(cat){
+  currentCat = cat;
+  document.querySelectorAll('.cat-tab').forEach(t=>t.classList.toggle('active', t.getAttribute('data-cat')===cat));
+  renderCat(cat);
+}
+
+function fmtAEDComma(n){ return Math.round(n).toLocaleString('en-US'); }
+
+function buildTxnLines(matrix){
+  // One line per bucket (16 total), each listing every contributing department with amount and %.
+  const lines = [];
+  for(let i=0; i<BUCKET_LABELS.length; i++){
+    const contributors = [];
+    let bucketTotal = 0;
+    Object.keys(matrix).forEach(dept=>{
+      const amt = matrix[dept][i];
+      if(amt > 0.5){
+        contributors.push([dept, amt]);
+        bucketTotal += amt;
+      }
+    });
+    if(contributors.length === 0) continue;
+    contributors.sort((a,b)=>b[1]-a[1]);
+    const parts = contributors.map(([dept,amt])=>
+      dept + ' (' + fmtAEDComma(amt) + ' AED, ' + (amt/bucketTotal*100).toFixed(1) + '%)'
+    );
+    lines.push('"' + BUCKET_LABELS[i] + '" totals ' + fmtAEDComma(bucketTotal) + ' AED, contributed by: ' + parts.join(', ') + '.');
+  }
+  return lines;
+}
+
+function renderTxnRows(lines, emptyLabel){
+  if(lines.length === 0) return '<div class="txn-empty">'+emptyLabel+'</div>';
+  return lines.map((line,i)=>{
+    const escaped = line.replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,'&quot;').replace(/\n/g,' ');
+    const displayLine = line.replace(/^("[^"]+")/, '<span class="txn-bucket-name">$1</span>');
+    return '<div class="txn-row"><span class="txn-line">'+displayLine+'</span>'
+    + '<button class="txn-copy-btn" onclick="copyTxn(this, \''+escaped+'\')">'
+      + '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>'
+      + ' Copy</button></div>';
+  }).join('');
+}
+
+function renderTransactionsSection(cat){
+  const t = TRANSACTIONS[cat];
+  if(!t) return '';
+  const hasSingleSplit = (cat === 'Expat' || cat === 'Emirati');
+  const normalLines = buildTxnLines(t.normal);
+  const singleLines = hasSingleSplit ? buildTxnLines(t.single) : [];
+  const total = normalLines.length + singleLines.length;
+  const bodyHtml = hasSingleSplit
+    ? '<div class="txn-subgroup-title">Normal — included in this cycle\u2019s main payroll audit ('+normalLines.length+')</div>'
+      + renderTxnRows(normalLines, 'No normal transactions for this category this cycle.')
+      + '<div class="txn-subgroup-title">Single Transfers — paid outside the main audit/to-do this cycle ('+singleLines.length+')</div>'
+      + renderTxnRows(singleLines, 'No single-transfer transactions for this category this cycle.')
+    : renderTxnRows(normalLines, 'No transactions for this category this cycle.');
+  return '<div class="txn-section">'
+    + '<div class="txn-head" id="txnHead" onclick="toggleTxn()">'
+      + '<svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>'
+      + '<span class="txn-head-title">Transactions</span>'
+      + '<span class="txn-head-count">— '+total+' line'+(total===1?'':'s')+' to store in the ERP</span>'
+    + '</div>'
+    + '<div class="txn-body" id="txnBody">'
+      + bodyHtml
+    + '</div>'
+    + '</div>';
+}
+function toggleTxn(){
+  document.getElementById('txnHead').classList.toggle('open');
+  document.getElementById('txnBody').classList.toggle('open');
+}
+function copyTxn(btn, text){
+  navigator.clipboard.writeText(text).catch(()=>{});
+  const original = btn.innerHTML;
+  btn.classList.add('copied');
+  btn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg> Copied';
+  setTimeout(()=>{ btn.classList.remove('copied'); btn.innerHTML = original; }, 1500);
+}
+
+function renderCat(cat){
+  const r = RESULTS[cat];
+  if(!r) return;
+  const totalPeople = RESULTS._total_people;
+  const peopleBlank = totalPeople - r.people_priced;
+  const okDiff = Math.abs(r.difference) < 1;
+
+  let html = '';
+
+  html += renderTransactionsSection(cat);
+
+  html += '<div class="kpi-row">'
+    + '<div class="kpi-card"><div class="kpi-label">Employees Priced</div><div class="kpi-value">'+r.people_priced+'</div><div class="kpi-sub">of '+totalPeople+' total on file</div></div>'
+    + '<div class="kpi-card"><div class="kpi-label">Total Salary Entered</div><div class="kpi-value">'+fmtAED(r.total_salary)+'</div></div>'
+    + '<div class="kpi-card"><div class="kpi-label">Allocated to Products</div><div class="kpi-value">'+fmtAED(r.allocated_to_products)+'</div><div class="kpi-sub">'+pct1(r.allocated_to_products/r.total_salary*100)+'% of total salary</div></div>'
+    + '<div class="kpi-card"><div class="kpi-label">Reconciliation</div><div class="kpi-value" style="color:'+(okDiff?'#0d7a3f':'#c0392b')+';font-size:16px;">'+(okDiff?'✓ Balances to 0.00':'⚠ '+fmtAED(r.difference)+' gap')+'</div></div>'
+    + '</div>';
+
+  html += '<div class="result-section-title">Cost per Bucket</div>';
+  html += '<div class="table-card"><table><thead><tr><th>Bucket</th><th class="num-cell" style="width:150px;">Total</th><th class="num-cell" style="width:150px;">Tech</th><th class="num-cell" style="width:150px;">Operational</th><th class="num-cell" style="width:110px;">% of Allocated</th></tr></thead><tbody>';
+  BUCKET_LABELS.forEach((label,i)=>{
+    const pct = r.allocated_to_products>0 ? (r.bucket_total[i]/r.allocated_to_products*100) : 0;
+    html += '<tr><td>'+label+'</td><td class="num-cell">'+fmtAED(r.bucket_total[i])+'</td><td class="num-cell">'+fmtAED(r.bucket_tech[i])+'</td><td class="num-cell">'+fmtAED(r.bucket_op[i])+'</td><td class="num-cell">'+pct1(pct)+'%</td></tr>';
+  });
+  html += '<tr style="background:#fafbff;font-weight:700;"><td>TOTAL ALLOCATED TO PRODUCTS</td><td class="num-cell">'+fmtAED(r.allocated_to_products)+'</td><td class="num-cell">'+fmtAED(r.bucket_tech.reduce((a,b)=>a+b,0))+'</td><td class="num-cell">'+fmtAED(r.bucket_op.reduce((a,b)=>a+b,0))+'</td><td></td></tr>';
+  html += '</tbody></table></div>';
+
+  html += '<div class="result-section-title">By Product</div>';
+  html += '<div class="table-card"><table><thead><tr><th>Product</th><th class="num-cell" style="width:150px;">Total</th><th class="num-cell" style="width:150px;">Tech</th><th class="num-cell" style="width:150px;">Operational</th></tr></thead><tbody>';
+  Object.entries(r.by_product).forEach(([name,v])=>{
+    html += '<tr><td>'+name+'</td><td class="num-cell">'+fmtAED(v.total)+'</td><td class="num-cell">'+fmtAED(v.tech)+'</td><td class="num-cell">'+fmtAED(v.op)+'</td></tr>';
+  });
+  html += '</tbody></table></div>';
+
+  html += '<div class="result-section-title">By Stage</div>';
+  html += '<div class="table-card"><table><thead><tr><th>Stage</th><th class="num-cell" style="width:150px;">Total</th><th class="num-cell" style="width:150px;">Tech</th><th class="num-cell" style="width:150px;">Operational</th></tr></thead><tbody>';
+  Object.entries(r.by_stage).forEach(([name,v])=>{
+    html += '<tr><td>'+name+'</td><td class="num-cell">'+fmtAED(v.total)+'</td><td class="num-cell">'+fmtAED(v.tech)+'</td><td class="num-cell">'+fmtAED(v.op)+'</td></tr>';
+  });
+  html += '</tbody></table></div>';
+
+  html += '<div class="result-section-title">Reconciliation — must come to zero</div>';
+  html += '<div class="table-card"><table class="recon-table"><tbody>';
+  const reconRows = [
+    ['People priced', r.people_priced, false],
+    [cat==='All' ? 'People still blank' : 'People outside this category', peopleBlank, false],
+    ['Total salary entered', r.total_salary, true],
+    ['Allocated to products', r.allocated_to_products, true],
+    ['Founder — founders and their staff, not attributed', r.founder, true],
+    ['Own P&L — BLA, MaidMatch', r.ownpl, true],
+    ['WEEL — team not yet mapped to a product', r.weel, true],
+    ['Auditing — team not yet mapped to a product', r.auditing, true],
+    ['Unallocated — people with no department', r.unallocated, true],
+  ];
+  reconRows.forEach(([label,val,isMoney])=>{
+    html += '<tr><td>'+label+'</td><td class="num-cell">'+(isMoney?fmtAED(val):val)+'</td></tr>';
+  });
+  html += '<tr class="recon-diff-row '+(okDiff?'ok':'bad')+'"><td>Difference (should be 0.00)</td><td class="num-cell">'+fmtAED(r.difference)+' '+(okDiff?'✓':'⚠')+'</td></tr>';
+  html += '</tbody></table></div>';
+
+  document.getElementById('catBody').innerHTML = html;
+}
+
+
+
+/* ===================== Configuration ===================== */
+
+let HJ_DEPT_NAMES = ['Marketing','Customer Experience','AI Implementation','R&D','Data Analytics and Reporting','CEO'];
+const EXCLUDED_DEPT_NAMES = ['BLA','MaidMatch','WEEL','Auditing','Founder'];
+let FF_DEPT_NAMES = ['Accommodation Management','Beirut Office Management','Broadcasting','CC Delighters Chatbot','CC Live-In Maid Management','CC Live-in Client Management','CC Live-in L1','CC Live-in L2','CC Live-out Client Management','CC Live-out L1','CC Live-out L2','CC Live-out Maid Management','CC Long Term','CC Maid Offboarding','CC Maid Retention','CC Resolvers Chatbot','CC Sales','CSA & Trainers','ChatCC','Chatbot & LLM Development'];
+const DIGEST_RECIPIENTS = ['omar.youssef@maids.cc','mohammad.khalil@maids.cc'];
+const CLOSED_RECIPIENTS = ['omar.youssef@maids.cc','mohammad.khalil@maids.cc','ramzi@maids.cc'];
+let PRODUCT_BUCKETS = [
+  ['MV — Maid Visa','Onboarding','MV — Maid Visa — Onboarding','General'],
+  ['MV — Maid Visa','Ongoing','MV — Maid Visa — Ongoing','General'],
+  ['CC Live-in','Client · Onboarding','CC Live-in — Client · Onb','Client'],
+  ['CC Live-in','Client · Ongoing','CC Live-in — Client · Ong','Client'],
+  ['CC Live-in','Maid · Onboarding','CC Live-in — Maid · Onb','Maid'],
+  ['CC Live-in','Maid · Ongoing','CC Live-in — Maid · Ong','Maid'],
+  ['CC Live-out','Client · Onboarding','CC Live-out — Client · Onb','Client'],
+  ['CC Live-out','Client · Ongoing','CC Live-out — Client · Ong','Client'],
+  ['CC Live-out','Maid · Onboarding','CC Live-out — Maid · Onb','Maid'],
+  ['CC Live-out','Maid · Ongoing','CC Live-out — Maid · Ong','Maid'],
+  ['Part Time','Client · Onboarding','Part Time — Client · Onb','Client'],
+  ['Part Time','Client · Ongoing','Part Time — Client · Ong','Client'],
+  ['Part Time','Maid · Onboarding','Part Time — Maid · Onb','Maid'],
+  ['Part Time','Maid · Ongoing','Part Time — Maid · Ong','Maid'],
+  ['Travel Assist','Onboarding','Travel Assist — Onboarding','General'],
+  ['Travel Assist','Ongoing','Travel Assist — Ongoing','General'],
+];
+
+function renderChips(containerId, items, removable, extraClass){
+  const el = document.getElementById(containerId);
+  el.innerHTML = items.map(name =>
+    '<span class="cfg-chip'+(extraClass?' '+extraClass:'')+'">'+name+(removable?' <button onclick="this.parentElement.remove()">×</button>':'')+'</span>'
+  ).join('') + (removable ? '<button class="cfg-add-btn" onclick="alert(\'Add department — opens a picker in the real build\')">+ Add</button>' : '');
+}
+
+function renderBuckets(){
+  document.getElementById('bucketRows').innerHTML = PRODUCT_BUCKETS.map(([product,stage,label,splitBy],i)=>
+    '<tr><td>'+product+'</td><td>'+stage+'</td><td><input type="text" value="'+label+'" style="width:100%;border:1px solid var(--border);border-radius:6px;padding:6px 8px;font-size:13px;font-family:inherit;"></td>'
+    + '<td>'+splitBy+'</td>'
+    + '<td><button class="link-btn" style="color:var(--red);background:none;border:none;font-weight:600;cursor:pointer;font-size:13px;" onclick="removeBucket('+i+')">Remove</button></td></tr>'
+  ).join('');
+}
+
+function removeBucket(i){
+  if(!confirm('Remove "'+PRODUCT_BUCKETS[i][2]+'"? This bucket will disappear from every department\'s split — any % already assigned to it is lost, not redistributed.')) return;
+  PRODUCT_BUCKETS.splice(i,1);
+  renderBuckets();
+  showToast('Bucket removed');
+}
+
+function openAddBucketModal(mode){
+  const isProduct = mode === 'product';
+  const existingProducts = [...new Set(PRODUCT_BUCKETS.map(b=>b[0]))];
+  const html = isProduct
+    ? '<div class="modal-box">'
+      + '<div class="cfg-section-title" style="margin-bottom:14px;">Add Product</div>'
+      + '<div style="display:flex;flex-direction:column;gap:12px;">'
+        + '<div><label style="font-size:12.5px;font-weight:600;">Product name</label><input id="newProductName" type="text" class="cfg-input wide" style="width:100%;margin-top:4px;" placeholder="e.g. Corporate Cleaning"></div>'
+        + '<div><label style="font-size:12.5px;font-weight:600;">Split by</label><select id="newProductSplitBy" class="cfg-select" style="width:100%;margin-top:4px;"><option>General (no split)</option><option>Client / Maid</option></select></div>'
+        + '<div style="font-size:12px;color:var(--ink-soft);">Adds Onboarding and Ongoing stages automatically (and Client/Maid sub-stages if selected). Every existing department starts at 0% for the new bucket(s).</div>'
+      + '</div>'
+      + '<div style="display:flex;justify-content:flex-end;gap:10px;margin-top:18px;">'
+        + '<button class="btn btn-outline" onclick="closeModal()">Cancel</button>'
+        + '<button class="btn btn-solid" onclick="submitAddProduct()">Add Product</button>'
+      + '</div>'
+      + '</div>'
+    : '<div class="modal-box">'
+      + '<div class="cfg-section-title" style="margin-bottom:14px;">Add Bucket to Existing Product</div>'
+      + '<div style="display:flex;flex-direction:column;gap:12px;">'
+        + '<div><label style="font-size:12.5px;font-weight:600;">Product</label><select id="newBucketProduct" class="cfg-select" style="width:100%;margin-top:4px;">'+existingProducts.map(p=>'<option>'+p+'</option>').join('')+'</select></div>'
+        + '<div><label style="font-size:12.5px;font-weight:600;">Stage / sub-stage name</label><input id="newBucketStage" type="text" class="cfg-input wide" style="width:100%;margin-top:4px;" placeholder="e.g. Client · Renewal"></div>'
+        + '<div><label style="font-size:12.5px;font-weight:600;">Bucket label</label><input id="newBucketLabel" type="text" class="cfg-input wide" style="width:100%;margin-top:4px;" placeholder="e.g. CC Live-in — Client · Renewal"></div>'
+        + '<div><label style="font-size:12.5px;font-weight:600;">Split by</label><select id="newBucketSplitBy" class="cfg-select" style="width:100%;margin-top:4px;"><option>Client</option><option>Maid</option><option>General</option></select></div>'
+      + '</div>'
+      + '<div style="display:flex;justify-content:flex-end;gap:10px;margin-top:18px;">'
+        + '<button class="btn btn-outline" onclick="closeModal()">Cancel</button>'
+        + '<button class="btn btn-solid" onclick="submitAddBucket()">Add Bucket</button>'
+      + '</div>'
+      + '</div>';
+  showModal(html);
+}
+function showModal(innerHtml){
+  let overlay = document.getElementById('cfgModalOverlay');
+  if(!overlay){
+    overlay = document.createElement('div');
+    overlay.id = 'cfgModalOverlay';
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(14,23,42,.45);z-index:200;display:flex;align-items:center;justify-content:center;';
+    document.body.appendChild(overlay);
+  }
+  overlay.innerHTML = innerHtml;
+  const style = document.createElement('style');
+  style.textContent = '.modal-box{background:#fff;border-radius:14px;padding:22px;width:420px;max-width:90vw;box-shadow:0 20px 60px rgba(14,23,42,.25);}';
+  overlay.appendChild(style);
+  overlay.style.display = 'flex';
+}
+function closeModal(){
+  const overlay = document.getElementById('cfgModalOverlay');
+  if(overlay) overlay.style.display = 'none';
+}
+function submitAddProduct(){
+  const name = document.getElementById('newProductName').value.trim();
+  if(!name){ alert('Product name is required'); return; }
+  const splitBy = document.getElementById('newProductSplitBy').value;
+  if(splitBy.startsWith('General')){
+    PRODUCT_BUCKETS.push([name,'Onboarding',name+' — Onboarding','General']);
+    PRODUCT_BUCKETS.push([name,'Ongoing',name+' — Ongoing','General']);
+  } else {
+    PRODUCT_BUCKETS.push([name,'Client · Onboarding',name+' — Client · Onb','Client']);
+    PRODUCT_BUCKETS.push([name,'Client · Ongoing',name+' — Client · Ong','Client']);
+    PRODUCT_BUCKETS.push([name,'Maid · Onboarding',name+' — Maid · Onb','Maid']);
+    PRODUCT_BUCKETS.push([name,'Maid · Ongoing',name+' — Maid · Ong','Maid']);
+  }
+  closeModal();
+  renderBuckets();
+  showToast('Product added — every department now has this bucket at 0%');
+}
+function submitAddBucket(){
+  const product = document.getElementById('newBucketProduct').value;
+  const stage = document.getElementById('newBucketStage').value.trim();
+  const label = document.getElementById('newBucketLabel').value.trim();
+  const splitBy = document.getElementById('newBucketSplitBy').value;
+  if(!stage || !label){ alert('Stage and label are required'); return; }
+  PRODUCT_BUCKETS.push([product, stage, label, splitBy]);
+  closeModal();
+  renderBuckets();
+  showToast('Bucket added — every department now has it at 0%');
+}
+
+function saveConfig(){
+  showToast('Configuration saved');
+}
+
+
+function populateReclassifyDropdown(){
+  const el = document.getElementById('reclassifyDept');
+  const all = [...HJ_DEPT_NAMES.map(n=>({n,cat:'Human Judgment'})), ...FF_DEPT_NAMES.map(n=>({n,cat:'Fixed Formula'}))].sort((a,b)=>a.n.localeCompare(b.n));
+  el.innerHTML = all.map(d=>'<option value="'+d.n+'">'+d.n+' — currently '+d.cat+'</option>').join('');
+}
+function applyReclassify(){
+  const dept = document.getElementById('reclassifyDept').value;
+  const target = document.getElementById('reclassifyTarget').value;
+  HJ_DEPT_NAMES = HJ_DEPT_NAMES.filter(n=>n!==dept);
+  FF_DEPT_NAMES = FF_DEPT_NAMES.filter(n=>n!==dept);
+  if(target === 'Human Judgment') HJ_DEPT_NAMES.push(dept);
+  else FF_DEPT_NAMES.push(dept);
+  renderChips('hjChips', HJ_DEPT_NAMES, true);
+  populateReclassifyDropdown();
+  showToast(dept + ' moved to ' + target);
+}
+
+renderChips('hjChips', HJ_DEPT_NAMES, true);
+renderChips('exclChips', EXCLUDED_DEPT_NAMES, true, 'excluded');
+renderChips('digestChips', DIGEST_RECIPIENTS, true);
+renderChips('closedChips', CLOSED_RECIPIENTS, true);
+renderBuckets();
+populateReclassifyDropdown();
+
+</script>
+</body>
+</html>
