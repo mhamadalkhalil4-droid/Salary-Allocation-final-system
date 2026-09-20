@@ -464,14 +464,11 @@ page{display:none;}
       </div>
 
       <div class="inner-page" id="innerpage-formula">
-        <p class="subpage-note">36 departments are worked out from Variables, Ratios and Assumptions — never typed by hand. To change one, change what feeds it (Configuration) and refresh.</p>
+        <p class="subpage-note">36 departments are worked out from Variables, Ratios and Assumptions — never typed by hand. Refreshed automatically, the same way payroll closes automatically — nobody clicks anything.</p>
         <div id="formulaPendingNote"></div>
         <div class="ff-toolbar">
           <span class="ff-toolbar-note" id="formulaCount">Showing 1–36 of 36</span>
-          <button class="btn btn-solid" onclick="openRefreshModal()">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>
-            Refresh
-          </button>
+          <span class="ff-toolbar-note" id="formulaRefreshStatus" style="font-weight:600;">Last refreshed: 30 Nov 2026, 23:58 (automatic, last day of the month) · <span class="edit-again-link" onclick="openRefreshModal()" style="margin-left:0;">View what changed</span></span>
         </div>
         <div class="table-card">
           <table>
@@ -554,16 +551,33 @@ page{display:none;}
       <div class="cfg-section">
         <div class="cfg-section-head">
           <div class="cfg-section-title">Formula Refresh</div>
-          <div class="cfg-section-sub">How a Formula department's bucket split gets updated from Variables, Ratios and Assumptions. Those are managed above and on the Formula tab (Refresh) — this is just the cadence and fallback behavior.</div>
+          <div class="cfg-section-sub">When a Formula department's bucket split gets recalculated from Variables, Ratios and Assumptions, and what happens if something's not ready when it does. Those are managed above.</div>
         </div>
         <div class="cfg-body">
           <div class="cfg-row">
-            <div><div class="cfg-row-label">Refresh reminder</div><div class="cfg-row-desc">Nudge the data team if Variables haven't been refreshed in time for this month's close.</div></div>
-            <div class="cfg-row-control"><select class="cfg-select"><option>Off</option><option selected>3 days before payroll close</option><option>7 days before payroll close</option></select></div>
+            <div><div class="cfg-row-label">Refresh timing</div><div class="cfg-row-desc">When the automatic refresh fires each month. Changing this changes when it runs going forward — it does not trigger one now.</div></div>
+            <div class="cfg-row-control"><select class="cfg-select"><option selected>Last day of the month</option><option>1 day before payroll close</option><option>3 days before payroll close</option><option>A specific day of the month</option></select></div>
           </div>
           <div class="cfg-row">
-            <div><div class="cfg-row-label">Missing-refresh fallback</div><div class="cfg-row-desc">What happens if Variables weren't refreshed before this cycle's calculation runs.</div></div>
+            <div><div class="cfg-row-label">Missing-refresh fallback</div><div class="cfg-row-desc">What happens if a Variable is missing or stale at the moment the automatic refresh fires.</div></div>
             <div class="cfg-row-control"><select class="cfg-select"><option selected>Keep last known split</option><option>Flag for manual review</option><option>Block the Results run until refreshed</option></select></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="cfg-section">
+        <div class="cfg-section-head">
+          <div class="cfg-section-title">Results & Notifications</div>
+          <div class="cfg-section-sub">Settings for the automatic monthly Results run (section 6) — who's told when it finishes, and what the Department Cost Table leaves out.</div>
+        </div>
+        <div class="cfg-body">
+          <div class="cfg-row">
+            <div><div class="cfg-row-label">Payroll run notifications</div><div class="cfg-row-desc">Who gets told every time a run finishes, pass or fail, with the reason if it failed (section 6.5).</div></div>
+            <div class="cfg-row-control"><div class="cfg-chip-list" id="payrollNotifyChips"></div></div>
+          </div>
+          <div class="cfg-row">
+            <div><div class="cfg-row-label">Department Cost Table minimum headcount</div><div class="cfg-row-desc">Departments with fewer people than this are left out of the Department Cost Table entirely (section 6.7) — never merged, just absent.</div></div>
+            <div class="cfg-row-control"><input type="number" class="cfg-select" id="minHeadcountInput" value="3" min="1" style="width:80px;text-align:center;" onchange="applyMinHeadcountChange(this.value)"></div>
           </div>
         </div>
       </div>
@@ -2221,34 +2235,18 @@ function toggleFormulaEdit(i){ formulaOpenIndex = (formulaOpenIndex===i)?null:i;
 
 /* ============== Refresh \u2192 Preview \u2192 Apply ============== */
 let pendingRefresh = null;
-function openRefreshModal(){
-  // Step 1-2: simulate fetching ERP variables (perturb slightly) + date check
+let lastRefreshDiff = [];
+function runAutomaticRefresh(){
+  // Simulates what happened automatically at 23:58 on the last day of the month: Check, then recompute.
   const staleFlags = [];
   ERP_VARIABLES.forEach(v=>{
     if(v.value===null){ staleFlags.push(v.id+' ('+v.name+') \u2014 no data at all'); return; }
     if(Math.random() < 0.15) staleFlags.push(v.id+' ('+v.name+') \u2014 older than the month being priced');
   });
-  const html = '<div class="modal-box-lg">'
-    + '<div class="modal-title-lg">Refresh \u2014 Step 1 of 2: Check</div>'
-    + '<div class="modal-sub-lg">Fetched 18 ERP variables. Nothing is saved yet.</div>'
-    + (staleFlags.length ? '<div class="ff-note-box" style="margin-bottom:14px;"><b>Flagged:</b><br>'+staleFlags.join('<br>')+'</div>' : '')
-    + '<div style="font-size:13px;color:var(--ink-soft);margin-bottom:14px;">Recomputing ratios and every Formula department that uses a changed one\u2026</div>'
-    + '<div style="display:flex;justify-content:flex-end;gap:10px;">'
-      + '<button class="btn btn-outline" onclick="closeFfModal()">Cancel</button>'
-      + '<button class="btn btn-solid" onclick="runRefreshPreview()">See Preview</button>'
-    + '</div>'
-    + '</div>';
-  showFfModal(html);
-}
-function runRefreshPreview(){
-  // Simulate small perturbation to a couple of ERP variables, recompute affected ratios/rows
   const before = FORMULA_DEPTS.map(d=>({name:d.name, row:[...d.proposed]}));
-  // Simple illustrative recompute: nudge R1-derived departments (Group 1 users of R1) by a small random amount
-  const shift = (Math.random()*4-2); // +/- 2 points
+  const shift = (Math.random()*4-2);
   FORMULA_DEPTS.forEach(d=>{
     if(d.uses==='R1' && !d.pending){
-      const idx3 = d.proposed.findIndex((v,i)=> v>0 && i===3);
-      // find the two nonzero indices and shift between them
       const nz = d.proposed.map((v,i)=>({v,i})).filter(x=>x.v>0);
       if(nz.length===2){
         d.proposed[nz[0].i] = Math.round((nz[0].v+shift)*10)/10;
@@ -2256,31 +2254,32 @@ function runRefreshPreview(){
       }
     }
   });
-  const after = FORMULA_DEPTS;
-  const diffRows = after.map((d,i)=>{
+  applyOverhead(); // recomputed last, since it depends on every other department's row
+  lastRefreshDiff = FORMULA_DEPTS.map((d,i)=>{
     const b = before[i].row, a = d.proposed;
-    const changed = JSON.stringify(b)!==JSON.stringify(a);
-    if(!changed) return null;
-    return '<tr><td>'+d.name+'</td><td class="num-cell">'+b.join(' / ')+'</td><td class="num-cell">'+a.join(' / ')+'</td></tr>';
+    if(JSON.stringify(b)===JSON.stringify(a)) return null;
+    return {name:d.name, before:b, after:a};
   }).filter(Boolean);
+  lastRefreshDiff.staleFlags = staleFlags;
+}
+function openRefreshModal(){
+  const diffRows = lastRefreshDiff.map(d =>
+    '<tr><td>'+d.name+'</td><td class="num-cell">'+d.before.join(' / ')+'</td><td class="num-cell">'+d.after.join(' / ')+'</td></tr>'
+  );
   const html = '<div class="modal-box-lg">'
-    + '<div class="modal-title-lg">Refresh \u2014 Step 2 of 2: Preview</div>'
-    + '<div class="modal-sub-lg">'+diffRows.length+' department(s) would change. Nothing is saved until Apply is pressed.</div>'
+    + '<div class="modal-title-lg">Last Automatic Refresh \u2014 30 Nov 2026, 23:58</div>'
+    + '<div class="modal-sub-lg">Ran on its own, on the last day of the month \u2014 nobody triggered this.</div>'
+    + (lastRefreshDiff.staleFlags && lastRefreshDiff.staleFlags.length
+        ? '<div class="ff-note-box" style="margin-bottom:14px;"><b>Flagged during Check:</b><br>'+lastRefreshDiff.staleFlags.join('<br>')+'</div>'
+        : '')
     + (diffRows.length
-        ? '<div class="table-card"><table><thead><tr><th>Department</th><th>Row now \u2192</th><th>Row after</th></tr></thead><tbody>'+diffRows.join('')+'</tbody></table></div>'
-        : '<div class="txn-empty">No departments are affected by this refresh.</div>')
+        ? '<div class="table-card"><table><thead><tr><th>Department</th><th>Row before \u2192</th><th>Row after</th></tr></thead><tbody>'+diffRows.join('')+'</tbody></table></div>'
+        : '<div class="txn-empty">No departments changed in this refresh.</div>')
     + '<div style="display:flex;justify-content:flex-end;gap:10px;margin-top:14px;">'
-      + '<button class="btn btn-outline" onclick="closeFfModal()">Discard</button>'
-      + '<button class="btn btn-solid" onclick="applyRefresh()">Apply</button>'
+      + '<button class="btn btn-solid" onclick="closeFfModal()">Close</button>'
     + '</div>'
     + '</div>';
   showFfModal(html);
-}
-function applyRefresh(){
-  applyOverhead(); // recompute last \u2014 depends on every other department's row
-  closeFfModal();
-  renderFormula();
-  showToast('Refresh applied \u2014 one save, logged per cell');
 }
 function showFfModal(innerHtml){
   let overlay = document.getElementById('ffModalOverlay');
@@ -2316,7 +2315,7 @@ function showToast(msg){
 
 renderHj();
 renderFixed();
-applyOverhead();
+runAutomaticRefresh();
 
 
 /* ===================== Results ===================== */
@@ -2616,11 +2615,17 @@ function renderCat(cat){
 
   document.getElementById('catBody').innerHTML = html;
 }
+function applyMinHeadcountChange(value){
+  const n = Math.max(1, parseInt(value) || 1);
+  MIN_HEADCOUNT_DEPT_COST_TABLE = n;
+  document.getElementById('minHeadcountInput').value = n;
+  showToast('Department Cost Table minimum headcount set to '+n+' \u2014 applies from the next run onward');
+}
 function renderDeptCostTable(){
-  const included = DEPT_COST_TABLE.filter(d => d.headcount >= 3);
-  const excluded = DEPT_COST_TABLE.filter(d => d.headcount < 3);
+  const included = DEPT_COST_TABLE.filter(d => d.headcount >= MIN_HEADCOUNT_DEPT_COST_TABLE);
+  const excluded = DEPT_COST_TABLE.filter(d => d.headcount < MIN_HEADCOUNT_DEPT_COST_TABLE);
   let html = '<div class="result-section-title">Department Cost Table \u2014 sent to ERP separately from Transactions, All Employees only</div>';
-  html += '<div style="font-size:12.5px;color:var(--ink-soft);margin:-8px 0 12px;">One row per department, Total / Basic Salary / Bonus / Tech / Operational cost for this run. Departments with fewer than 3 people ('+excluded.length+' of them this run: '+excluded.map(d=>d.name).join(', ')+') are left out entirely \u2014 not merged anywhere, just absent.</div>';
+  html += '<div style="font-size:12.5px;color:var(--ink-soft);margin:-8px 0 12px;">One row per department, Total / Basic Salary / Bonus / Tech / Operational cost for this run. Departments with fewer than '+MIN_HEADCOUNT_DEPT_COST_TABLE+' people ('+excluded.length+' of them this run: '+excluded.map(d=>d.name).join(', ')+') are left out entirely \u2014 not merged anywhere, just absent.</div>';
   html += '<div style="font-size:12px;color:var(--ink-soft);margin:0 0 12px;">Bonus is any Manager Note addition whose reason is specifically "Bonus" \u2014 salary adjustments, pension compensation, and every other addition/deduction type stay out of this column and are not treated as a bonus.</div>';
   html += '<div class="table-card"><table><thead><tr><th>Department</th><th style="width:70px;">People</th><th class="num-cell" style="width:130px;">Total</th><th class="num-cell" style="width:130px;">Basic Salary</th><th class="num-cell" style="width:110px;">Bonus</th><th class="num-cell" style="width:130px;">Tech</th><th class="num-cell" style="width:130px;">Operational</th></tr></thead><tbody>';
   included.forEach(d=>{
@@ -2638,6 +2643,8 @@ function renderDeptCostTable(){
 /* ===================== Configuration ===================== */
 
 const EXCLUDED_DEPT_NAMES = ['Maidsat Global','MaidMatch','WEEL','Auditing','Founder'];
+let MIN_HEADCOUNT_DEPT_COST_TABLE = 3;
+const PAYROLL_RUN_NOTIFY_RECIPIENTS = ['omar.youssef@maids.cc'];
 const DIGEST_RECIPIENTS = ['omar.youssef@maids.cc','mohammad.khalil@maids.cc'];
 const CLOSED_RECIPIENTS = ['omar.youssef@maids.cc','mohammad.khalil@maids.cc','ramzi@maids.cc'];
 let PRODUCT_BUCKETS = [
@@ -2766,6 +2773,7 @@ function saveConfig(){
 
 renderChips('hjChips', HJ_DEPTS.map(d=>d.name), true);
 renderChips('exclChips', EXCLUDED_DEPT_NAMES, true, 'excluded');
+renderChips('payrollNotifyChips', PAYROLL_RUN_NOTIFY_RECIPIENTS, true);
 renderChips('digestChips', DIGEST_RECIPIENTS, true);
 renderChips('closedChips', CLOSED_RECIPIENTS, true);
 renderBuckets();
