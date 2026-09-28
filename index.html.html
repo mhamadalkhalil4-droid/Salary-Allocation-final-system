@@ -299,6 +299,7 @@ page{display:none;}
   .mega-page.active{display:block;}
 
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 
 
@@ -436,9 +437,10 @@ page{display:none;}
       <div class="mega-page" id="megapage-buckets">
 
       <div class="inner-tabs">
-        <div class="inner-tab active" id="innertab-hj" onclick="showInner('hj')">Human Judgment <span class="badge">6</span></div>
-        <div class="inner-tab" id="innertab-fixed" onclick="showInner('fixed')">Fixed <span class="badge">28</span></div>
-        <div class="inner-tab" id="innertab-formula" onclick="showInner('formula')">Formula <span class="badge">36</span></div>
+        <div class="inner-tab active" id="innertab-hj" onclick="showInner('hj')">Human Judgment <span class="badge">9</span></div>
+        <div class="inner-tab" id="innertab-fixed" onclick="showInner('fixed')">Fixed <span class="badge">29</span></div>
+        <div class="inner-tab" id="innertab-formula" onclick="showInner('formula')">Formula <span class="badge">32</span></div>
+        <div class="inner-tab" id="innertab-unalloc" onclick="showInner('unalloc')">Unallocated <span class="badge" id="unallocBadge">1</span></div>
       </div>
 
       <div class="inner-page active" id="innerpage-hj">
@@ -447,7 +449,7 @@ page{display:none;}
       </div>
 
       <div class="inner-page" id="innerpage-fixed">
-        <p class="subpage-note">28 departments, typed once. No inputs, no refresh, no approval — the data team can still correct one by hand if it's genuinely wrong, but nothing here recomputes on its own.</p>
+        <p class="subpage-note">29 departments, typed once. No inputs, no refresh, no approval — the data team can still correct one by hand if it's genuinely wrong, but nothing here recomputes on its own.</p>
         <div class="table-card">
           <table>
             <thead>
@@ -464,18 +466,18 @@ page{display:none;}
       </div>
 
       <div class="inner-page" id="innerpage-formula">
-        <p class="subpage-note">36 departments are worked out from Variables, Ratios and Assumptions — never typed by hand. Refreshed automatically, the same way payroll closes automatically — nobody clicks anything.</p>
+        <p class="subpage-note">32 departments are worked out from Variables and Ratios — never typed by hand. Refreshed automatically, the same way payroll closes automatically — nobody clicks anything.</p>
         <div id="formulaPendingNote"></div>
         <div class="ff-toolbar">
-          <span class="ff-toolbar-note" id="formulaCount">Showing 1–36 of 36</span>
-          <span class="ff-toolbar-note" id="formulaRefreshStatus" style="font-weight:600;">Last refreshed: 30 Nov 2026, 23:58 (automatic, last day of the month) · <span class="edit-again-link" onclick="openRefreshModal()" style="margin-left:0;">View what changed</span></span>
+          <span class="ff-toolbar-note" id="formulaCount">Showing 1–32 of 32</span>
+          <span class="ff-toolbar-note" id="formulaRefreshStatus" style="font-weight:600;">Last refreshed: 30 Nov 2026, 23:58 (automatic, last day of the month)</span>
         </div>
         <div class="table-card">
           <table>
             <thead>
               <tr>
                 <th>Department</th>
-                <th style="width:110px;">Group</th>
+                <th style="width:230px;">Lands on</th>
                 <th style="width:180px;">Built From</th>
                 <th style="width:100px;">Total</th>
                 <th style="width:90px;">Actions</th>
@@ -486,23 +488,33 @@ page{display:none;}
         </div>
       </div>
     
+            <div class="inner-page" id="innerpage-unalloc">
+        <p class="subpage-note">A department that exists on Department Time Split but has no allocation yet. Its row is all zero — its cost shows under "Not Allocated in Product" in Results — until the data team assigns it a group. Assigning it to Human Judgment auto-assigns the owner (whoever in it reports to the CEO).</p>
+        <div class="table-card">
+          <table>
+            <thead><tr><th>Department</th><th>People</th><th>Row</th><th style="width:260px;">Assign to</th></tr></thead>
+            <tbody id="unallocBody"></tbody>
+          </table>
+        </div>
       </div>
+
+</div>
 
       <div class="mega-page" id="megapage-results">
 
       <div id="runLogView">
-        <p class="subpage-note">Each payroll run is triggered automatically the moment that month's payroll status flips to "closed" — nobody clicks a button. Every run is logged here permanently. The payroll handler is notified the moment a run finishes, whether it passed or failed, with the reason if it didn't.</p>
-        <div id="runNotifyBanner"></div>
-        <div class="table-card">
+        <p class="subpage-note">Results are calculated per Employee Type the moment that type's payroll closes — Expat, Emirati, Overseas – Bank, Overseas – International, each on its own. The moment the fourth finishes, All Employees is calculated automatically and only then is everything sent to ERP, together. Every month is logged here permanently.</p>
+                <div class="table-card">
           <table>
             <thead>
               <tr>
                 <th>Month</th>
-                <th>Triggered By</th>
-                <th style="width:120px;">Date &amp; Time</th>
-                <th style="width:100px;">Status</th>
-                <th>Reason (if failed)</th>
-                <th style="width:150px;">Actions</th>
+                <th>Expat</th>
+                <th>Emirati</th>
+                <th>Overseas – Bank</th>
+                <th>Overseas – Intl</th>
+                <th>All Employees</th>
+                <th style="width:70px;">Actions</th>
               </tr>
             </thead>
             <tbody id="runLogBody"></tbody>
@@ -534,76 +546,18 @@ page{display:none;}
       <div class="cfg-section">
         <div class="cfg-section-head">
           <div class="cfg-section-title">Department Classification</div>
-          <div class="cfg-section-sub">Which of the 70 departments are set by hand, computed automatically, or excluded from product allocation entirely. Moving a department here is what moves it between tabs on Departments Allocation in Buckets.</div>
+          <div class="cfg-section-sub">Which of the 70 departments are set by hand, computed automatically, or excluded from product allocation entirely. Reference only — classification is changed by the data team, not from this screen.</div>
         </div>
         <div class="cfg-body">
           <div class="cfg-row">
-            <div><div class="cfg-row-label">Human Judgment (6)</div><div class="cfg-row-desc">Edited by hand on the Human Judgment tab — never touched by recalculation.</div></div>
+            <div><div class="cfg-row-label">Human Judgment (9)</div><div class="cfg-row-desc">Edited by hand on the Human Judgment tab — never touched by recalculation.</div></div>
             <div class="cfg-row-control"><div class="cfg-chip-list" id="hjChips"></div></div>
           </div>
           <div class="cfg-row">
             <div><div class="cfg-row-label">Excluded from product allocation (5)</div><div class="cfg-row-desc">Own P&L departments — cost still appears in the Results reconciliation, just never lands in a product bucket.</div></div>
             <div class="cfg-row-control"><div class="cfg-chip-list" id="exclChips"></div></div>
           </div>
-        </div>
-      </div>
-
-      <div class="cfg-section">
-        <div class="cfg-section-head">
-          <div class="cfg-section-title">Formula Refresh</div>
-          <div class="cfg-section-sub">When a Formula department's bucket split gets recalculated from Variables, Ratios and Assumptions, and what happens if something's not ready when it does. Those are managed above.</div>
-        </div>
-        <div class="cfg-body">
-          <div class="cfg-row">
-            <div><div class="cfg-row-label">Refresh timing</div><div class="cfg-row-desc">When the automatic refresh fires each month. Changing this changes when it runs going forward — it does not trigger one now.</div></div>
-            <div class="cfg-row-control"><select class="cfg-select"><option selected>Last day of the month</option><option>1 day before payroll close</option><option>3 days before payroll close</option><option>A specific day of the month</option></select></div>
-          </div>
-          <div class="cfg-row">
-            <div><div class="cfg-row-label">Missing-refresh fallback</div><div class="cfg-row-desc">What happens if a Variable is missing or stale at the moment the automatic refresh fires.</div></div>
-            <div class="cfg-row-control"><select class="cfg-select"><option selected>Keep last known split</option><option>Flag for manual review</option><option>Block the Results run until refreshed</option></select></div>
-          </div>
-        </div>
-      </div>
-
-      <div class="cfg-section">
-        <div class="cfg-section-head">
-          <div class="cfg-section-title">Results & Notifications</div>
-          <div class="cfg-section-sub">Settings for the automatic monthly Results run (section 6) — who's told when it finishes, and what the Department Cost Table leaves out.</div>
-        </div>
-        <div class="cfg-body">
-          <div class="cfg-row">
-            <div><div class="cfg-row-label">Payroll run notifications</div><div class="cfg-row-desc">Who gets told every time a run finishes, pass or fail, with the reason if it failed (section 6.5).</div></div>
-            <div class="cfg-row-control"><div class="cfg-chip-list" id="payrollNotifyChips"></div></div>
-          </div>
-          <div class="cfg-row">
-            <div><div class="cfg-row-label">Department Cost Table minimum headcount</div><div class="cfg-row-desc">Departments with fewer people than this are left out of the Department Cost Table entirely (section 6.7) — never merged, just absent.</div></div>
-            <div class="cfg-row-control"><input type="number" class="cfg-select" id="minHeadcountInput" value="3" min="1" style="width:80px;text-align:center;" onchange="applyMinHeadcountChange(this.value)"></div>
-          </div>
-        </div>
-      </div>
-
-      <div class="cfg-section">
-        <div class="cfg-section-head">
-          <div class="cfg-section-title">Org Review Confirmation Cycle</div>
-          <div class="cfg-section-sub">Timing used by the self-service portal's monthly confirmation cycle.</div>
-        </div>
-        <div class="cfg-body">
-          <div class="cfg-row">
-            <div><div class="cfg-row-label">Cycle opens</div><div class="cfg-row-desc">Day of the month everyone's Org Review screen becomes editable.</div></div>
-            <div class="cfg-row-control"><input class="cfg-input" type="text" value="25th"></div>
-          </div>
-          <div class="cfg-row">
-            <div><div class="cfg-row-label">Employee grace period</div><div class="cfg-row-desc">Days before a manager gets alerted about that employee.</div></div>
-            <div class="cfg-row-control"><input class="cfg-input" type="text" value="1 day"></div>
-          </div>
-          <div class="cfg-row">
-            <div><div class="cfg-row-label">Company-wide admin digest starts</div><div class="cfg-row-desc">Day the whole-company unconfirmed digest begins.</div></div>
-            <div class="cfg-row-control"><input class="cfg-input" type="text" value="Day 3"></div>
-          </div>
-          <div class="cfg-row">
-            <div><div class="cfg-row-label">Cutoff / auto-confirm</div><div class="cfg-row-desc">Day the cycle closes and anything unconfirmed is auto-confirmed in the portal.</div></div>
-            <div class="cfg-row-control"><input class="cfg-input" type="text" value="1st of next month"></div>
-          </div>
+          
         </div>
       </div>
 
@@ -621,17 +575,13 @@ page{display:none;}
 
       <div class="cfg-section">
         <div class="cfg-section-head">
-          <div class="cfg-section-title">Notification Recipients</div>
-          <div class="cfg-section-sub">Who gets the company-wide oversight emails — separate from the employee/manager alerts, which always go to the people involved.</div>
+          <div class="cfg-section-title">Allocation Model Export</div>
+          <div class="cfg-section-sub">One Excel workbook with the whole model as it stands right now: every Variable with its value, every Ratio with its formula, and all 70 departments' 16-bucket rows.</div>
         </div>
         <div class="cfg-body">
           <div class="cfg-row">
-            <div><div class="cfg-row-label">Daily unconfirmed digest (from Day 3)</div></div>
-            <div class="cfg-row-control"><div class="cfg-chip-list" id="digestChips"></div></div>
-          </div>
-          <div class="cfg-row">
-            <div><div class="cfg-row-label">Cycle-closed summary (1st of month)</div></div>
-            <div class="cfg-row-control"><div class="cfg-chip-list" id="closedChips"></div></div>
+            <div><div class="cfg-row-label">Download the allocation model</div><div class="cfg-row-desc">Three sheets: Variables · Ratios · Department rows. Read-only snapshot — nothing in the file changes anything in the system.</div></div>
+            <div class="cfg-row-control"><button class="btn btn-solid" onclick="exportAllocationWorkbook()">Download Allocation Model (.xlsx)</button></div>
           </div>
         </div>
       </div>
@@ -649,14 +599,7 @@ page{display:none;}
             </table>
           </div>
           <div style="margin-top:14px;display:flex;gap:10px;">
-            <button class="btn btn-outline" onclick="openAddBucketModal('product')">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-              Add Product
-            </button>
-            <button class="btn btn-outline" onclick="openAddBucketModal('bucket')">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-              Add Bucket to Existing Product
-            </button>
+            
           </div>
         </div>
       </div>
@@ -914,20 +857,51 @@ const BUCKET_GROUPS = [
 
 // Real Oct 2026 department data
 const HJ_DEPTS = [
-  {id:'hj1', name:'Marketing', pil:'Mahmoud Ali Alayan', proposed:[47.5,0,38,0,4.8,0,9.5,0,0.2,0,0,0,0,0,0,0]},
-  {id:'hj2', name:'Customer Experience', pil:'Aya Ibrahim Taher', proposed:[0,0,20.5,20.5,20,20,4.5,4.5,5,5,0,0,0,0,0,0]},
-  {id:'hj3', name:'AI Implementation', pil:'MHD Amin Mazen Aljebbeh', proposed:[15,30,6,14,6,14,1.5,3.5,1.5,3.5,0.5,1,0.5,1,0.6,1.4]},
-  {id:'hj4', name:'R&D', pil:'Ali Hisham Hamdar', proposed:[13.5,31.5,6,14,6,14,1.5,3.5,1.5,3.5,0.5,1,0.5,1,0.6,1.4]},
-  {id:'hj5', name:'Data Analytics and Reporting', pil:'Chady Younan', proposed:[13.5,31.5,6,14,6,14,1.5,3.5,1.5,3.5,0.45,1.05,0.45,1.05,0.6,1.4]},
-  {id:'hj6', name:'CEO', pil:'Mario Andre Gharios', proposed:[13.5,31.5,6,14,6,14,1.5,3.5,1.5,3.5,0.5,1,0.5,1,0.6,1.4]},
+  {id:'hj1', name:"Marketing", pil:"Benjamin Felix Thomas", proposed:[47.5, 0, 38, 0, 4.8, 0, 9.5, 0, 0.2, 0, 0, 0, 0, 0, 0, 0]},
+  {id:'hj2', name:"Customer Experience", pil:"Aya Ibrahim Taher", proposed:[0, 0, 20.5, 20.5, 20, 20, 4.5, 4.5, 5, 5, 0, 0, 0, 0, 0, 0]},
+  {id:'hj3', name:"AI Implementation", pil:"MHD Amin Mazen Aljebbeh", proposed:[15, 30, 6, 14, 6, 14, 1.5, 3.5, 1.5, 3.5, 0.5, 1, 0.5, 1, 0.6, 1.4]},
+  {id:'hj4', name:"R&D", pil:"Ali Hisham Hamdar", proposed:[13.5, 31.5, 6, 14, 6, 14, 1.5, 3.5, 1.5, 3.5, 0.5, 1, 0.5, 1, 0.6, 1.4]},
+  {id:'hj5', name:"Data Analytics and Reporting", pil:"Chady Younan", proposed:[13.5, 31.5, 6, 14, 6, 14, 1.5, 3.5, 1.5, 3.5, 0.45, 1.05, 0.45, 1.05, 0.6, 1.4]},
+  {id:'hj6', name:"CEO", pil:"Mario Andre Gharios", proposed:[13.5, 31.5, 6, 14, 6, 14, 1.5, 3.5, 1.5, 3.5, 0.5, 1, 0.5, 1, 0.6, 1.4]},
+  {id:'hj7', name:"Accommodation Management", pil:"Jessica Joao Abdallah", proposed:[0.0, 0.0, 0.0, 0.0, 23.55, 70, 0.0, 0.0, 5.85, 0.0, 0.0, 0.0, 0.6, 0.0, 0.0, 0.0]},
+  {id:'hj8', name:"Other Nationalities", pil:"Diptankar - Bhattacharya", proposed:[0.0, 0.0, 10.0, 10.0, 70, 10.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]},
+  {id:'hj9', name:"Chatbot & LLM Development", pil:"Sulaiman Imad Aldeen Almoghrabi", proposed:[15.2, 22.8, 13.12, 19.68, 8.01, 8.01, 2.88, 4.32, 1.99, 1.99, 0.0, 0.0, 0.0, 0.0, 0.8, 1.2]},
 ];
-HJ_DEPTS.forEach(r => { if(!r.savedProposed) r.savedProposed = r.name==='AI Implementation' ? [13.5,31.5,6,14,6,14,1.5,3.5,1.5,3.5,0.5,1,0.5,1,0.6,1.4] : [...r.proposed]; });
-const HJ_CYCLE_DEADLINE = '30 Jan 2026';
+HJ_DEPTS.forEach(r => { r.savedProposed = r.name==='AI Implementation' ? [13.5,31.5,6,14,6,14,1.5,3.5,1.5,3.5,0.5,1,0.5,1,0.6,1.4] : [...r.proposed]; });
+function exportAllocationWorkbook(){
+  if(typeof XLSX==='undefined'){ showToast('Excel library not loaded \u2014 check internet connection'); return; }
+  const wb=XLSX.utils.book_new();
+  const vars=[['ID','What it counts','Value','Notes','Last updated']].concat(ERP_VARIABLES.map(v=>[v.id,v.name,v.value,v.what,v.lastUpdated])).concat(ERP_LIST_VARIABLES.map(v=>[v.id,v.name,v.total===null?'list':v.total,v.what,v.lastUpdated]));
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(vars), 'Variables');
+  const rat=[['ID','What it splits','Built from','Value']].concat(RATIOS.map(r=>[r.id,r.name,r.madeFrom.join(' + '),r.value.join(' / ')]));
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(rat), 'Ratios');
+  const hdr=['Department','Group','Owner / Uses'].concat(BUCKET_SHORT);
+  const rows=[hdr]
+    .concat(HJ_DEPTS.map(d=>[d.name,'Human Judgment',d.pil].concat(d.proposed)))
+    .concat(FIXED_DEPTS.map(d=>[d.name,'Fixed',d.kind].concat(d.proposed)))
+    .concat(FORMULA_DEPTS.map(d=>[d.name,'Formula',d.uses].concat(d.proposed)));
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(rows), 'Department rows');
+  XLSX.writeFile(wb, 'Cost_Allocation_Export.xlsx'); showToast('Exported \u2014 Variables, Ratios, and all 70 department rows');
+}
+const HJ_DEADLINE_DAY = 30;
+const UNALLOCATED_DEPTS = [ {name:'Fleet Operations', headcount:4} ];
+function renderUnallocated(){
+  const b=document.getElementById('unallocBadge'); if(b) b.textContent=UNALLOCATED_DEPTS.length;
+  document.getElementById('unallocBody').innerHTML = UNALLOCATED_DEPTS.length ? UNALLOCATED_DEPTS.map((d,i)=>
+    '<tr class="data-row"><td>'+d.name+'</td><td>'+d.headcount+'</td><td style="color:var(--ink-soft);">0 in all 16 buckets</td>'
+    + '<td><select class="cfg-select" id="unallocSel'+i+'" style="width:150px;"><option>Human Judgment</option><option>Fixed</option><option>Formula</option></select> '
+    + '<button class="btn btn-outline" style="padding:6px 12px;" onclick="assignUnallocated('+i+')">Assign</button></td></tr>').join('')
+    : '<tr><td colspan="4" class="txn-empty">Every department has an allocation.</td></tr>';
+}
+function assignUnallocated(i){
+  const d=UNALLOCATED_DEPTS[i]; const g=document.getElementById('unallocSel'+i).value; const zero=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
+  if(g==='Human Judgment'){ HJ_DEPTS.push({id:'hj_'+d.name.replace(/\W+/g,'').toLowerCase(), name:d.name, pil:'(auto: whoever in '+d.name+' reports to the CEO)', proposed:[...zero], savedProposed:[...zero]}); renderHj(); }
+  else if(g==='Fixed'){ FIXED_DEPTS.push({name:d.name, kind:'single', proposed:[...zero]}); renderFixed(); }
+  else { FORMULA_DEPTS.push({name:d.name, uses:'\u2014 not yet defined', desc:'Assigned to Formula; steps still to be written by the data team.', pending:false, proposed:[...zero]}); renderFormula(); }
+  UNALLOCATED_DEPTS.splice(i,1); renderUnallocated(); showToast(d.name+' assigned to '+g+' \u2014 row stays 0 until set');
+}
+function hjDeadlineLabel(){ const d=HJ_DEADLINE_DAY; const sfx=(d%10==1&&d!=11)?'st':(d%10==2&&d!=12)?'nd':(d%10==3&&d!=13)?'rd':'th'; return 'the '+d+sfx+' of the month'; }
 
-
-// The 16 drivers — mode, standing, current ratio, and which departments each feeds.
-// Source: Cost Allocation spec v1.0 (Aug 2026), sections 7-10. Counts as at 25 Aug 2026.
-/* ===================== New Cost Allocation Model (Variables / Ratios / Assumptions) ===================== */
 const ERP_VARIABLES = [
   {id:"V1", name:"MV active clients", value:19096, what:"Active MV contracts. Not Travel Assist, not MaidMatch.", lastUpdated:'25 Aug 2026'},
   {id:"V2", name:"CC live-in active clients", value:4405, what:"Active CC live-in contracts", lastUpdated:'25 Aug 2026'},
@@ -937,58 +911,50 @@ const ERP_VARIABLES = [
   {id:"V6", name:"CC live-in maids", value:4978, what:"Live-in maids with us. Not Tracked, not Part Time cleaners, not client-owned maids.", lastUpdated:'25 Aug 2026'},
   {id:"V7", name:"CC live-out maids", value:1233, what:"Same, live-out", lastUpdated:'25 Aug 2026'},
   {id:"V8", name:"Part Time cleaners", value:124, what:"Cleaners with Part Time now", lastUpdated:'25 Aug 2026'},
-  {id:"V9", name:"CC live-in sales, 12 months", value:7422, what:"Net sales, last 12 full months", lastUpdated:'25 Aug 2026'},
-  {id:"V10", name:"CC live-out sales, 12 months", value:2422, what:"Same", lastUpdated:'25 Aug 2026'},
-  {id:"V11", name:"MV sales, 12 months", value:null, what:"Same \u2014 MISSING, does not exist yet", lastUpdated:'25 Aug 2026'},
-  {id:"V12", name:"Travel Assist sales, 12 months", value:null, what:"Same \u2014 MISSING, does not exist yet", lastUpdated:'25 Aug 2026'},
+  {id:"V9", name:"CC live-in sales, 12 months", value:7427, what:"Net sales, last 12 full months", lastUpdated:'25 Aug 2026'},
+  {id:"V10", name:"CC live-out sales, 12 months", value:2460, what:"Same", lastUpdated:'25 Aug 2026'},
+  {id:"V11", name:"MV sales, 12 months", value:10153, what:"Same. SALES_SILVER.CONTRACTS with CONTRACT_TYPE=\u2019MV\u2019", lastUpdated:'25 Aug 2026'},
+  {id:"V12", name:"Travel Assist sales, 12 months", value:198, what:"Same. SALES_SILVER.CONTRACTS with the TRAVEL_ASSIST flag", lastUpdated:'25 Aug 2026'},
   {id:"V13", name:"MV maids", value:18852, what:"Maids on MV. Switchers not counted here \u2014 they count as CC.", lastUpdated:'25 Aug 2026'},
   {id:"V14", name:"CC live-in maids (wider count)", value:8304, what:"Live-in maids, switchers included", lastUpdated:'25 Aug 2026'},
   {id:"V15", name:"CC live-out maids (wider count)", value:1613, what:"Same, live-out", lastUpdated:'25 Aug 2026'},
   {id:"V16", name:"Was-Travel-Assist maids", value:650, what:"Maids who came off Travel Assist. Not the 94 still on a live TA contract.", lastUpdated:'25 Aug 2026'},
   {id:"V17", name:"Live-in seekers", value:5430, what:"Prospects who want a live-in maid", lastUpdated:'25 Aug 2026'},
   {id:"V18", name:"Live-out seekers", value:3111, what:"Prospects who want a live-out maid", lastUpdated:'25 Aug 2026'},
+  {id:"V19", name:"Part Time active clients", value:620, what:"Customers who book cleaning visits", lastUpdated:'25 Aug 2026'},
+  {id:"V20", name:"Travel Assist active clients", value:92, what:"A client with a live Travel Assist contract right now", lastUpdated:'25 Aug 2026'},
+  {id:"V24", name:"Taxi cost, CC live-in maids, 12mo (AED)", value:2297347, what:"Rides whose maid is a CC live-in maid", lastUpdated:'25 Aug 2026'},
+  {id:"V25", name:"Taxi cost, CC live-out maids, 12mo (AED)", value:1044757, what:"Same, live-out", lastUpdated:'25 Aug 2026'},
+  {id:"V26", name:"Sourced maids placed live-in", value:4283, what:"maids.AT applicants who landed live-in, last 12 months", lastUpdated:'25 Aug 2026'},
+  {id:"V27", name:"Sourced maids placed live-out", value:1810, what:"Same, live-out", lastUpdated:'25 Aug 2026'},
+  {id:"V28", name:"Visa cases: initial, client\u2019s own maid", value:10225, what:"Initial visa requests, owner is the client\u2019s own maid", lastUpdated:'25 Aug 2026'},
+  {id:"V29", name:"Visa cases: initial, maid we sourced", value:27239, what:"Same, but the maid was sourced by us", lastUpdated:'25 Aug 2026'},
+  {id:"V30", name:"Visa cases: renewal, client\u2019s own maid", value:5837, what:"Renewal visa requests, client\u2019s own maid", lastUpdated:'25 Aug 2026'},
+  {id:"V31", name:"Visa cases: renewal, maid we sourced", value:1426, what:"Same, sourced maid", lastUpdated:'25 Aug 2026'},
+  {id:"V32", name:"Taxi cost, MV maids, 12mo (AED)", value:426000, what:"Rides whose maid is on MV", lastUpdated:'25 Aug 2026'},
 ];
-const TYPED_VARIABLES = [
-  {id:"M1", name:"Part Time active clients", value:620, owner:"Part Time team", why:"Not an ERP contract", isList:false, lastUpdated:'25 Aug 2026'},
-  {id:"M2", name:"Travel Assist active clients", value:588, owner:"Travel Assist team", why:"Not an ERP contract", isList:false, lastUpdated:'25 Aug 2026'},
-  {id:"M3", name:"Recruitment mix", value:[95, 5], owner:"PIL, monthly", why:"Almost all sourcing is live-in work. Nothing measures it.", isList:false, lastUpdated:'25 Aug 2026'},
-  {id:"M4", name:"Taxi split", value:[50, 50], owner:"PIL, monthly", why:"Live-out maids take a taxi daily, but the live-in database is much bigger. The two cancel out.", isList:false, lastUpdated:'25 Aug 2026'},
-  {id:"M5", name:"Development effort", value:[45, 40, 10, 3, 2], owner:"PIL, monthly", why:"Nothing measures dev effort per product", isList:false, lastUpdated:'25 Aug 2026'},
-  {id:"M6", name:"ChatCC chats by skill", value:null, owner:"Data team, monthly", why:"Counted on the last skill that handled the chat", isList:true, lastUpdated:'25 Aug 2026'},
-  {id:"M7", name:"Ziwo calls by team", value:null, owner:"Data team, monthly", why:"From the Ziwo usage export", isList:true, lastUpdated:'25 Aug 2026'},
-  {id:"M8", name:"Broadcasts by audience", value:null, owner:"Data team, monthly", why:"Broadcast volume per audience team", isList:true, lastUpdated:'25 Aug 2026'},
+
+const ERP_LIST_VARIABLES = [
+  {id:"V21", name:"ChatCC chats by skill", total:6664672, what:"Counted on the last skill that handled the chat", lastUpdated:'25 Aug 2026'},
+  {id:"V22", name:"Ziwo calls by team", total:null, what:"ASSIGNED_TEAM: RBs_LIVEIN, RBs_LIVEOUT, SALES, RESOLVERS, DOCTORS, DELIGHTERS", lastUpdated:'25 Aug 2026'},
+  {id:"V23", name:"Broadcasts by audience", total:null, what:"Grouped by TEMPLATE_TARGET \u2014 who received it, not who sent it", lastUpdated:'25 Aug 2026'},
 ];
 
 const RATIOS = [
-  {id:"R1", name:"CC clients", madeFrom:["V2", "V3"], value:[82.0, 18.0], decimals:0, pending:false},
-  {id:"R2", name:"CC sales", madeFrom:["V9", "V10"], value:[75.0, 25.0], decimals:0, pending:false},
-  {id:"R3", name:"CC maids", madeFrom:["V6", "V7"], value:[80.1, 19.9], decimals:1, pending:false},
-  {id:"R4", name:"CC seekers", madeFrom:["V17", "V18"], value:[64.0, 36.0], decimals:0, pending:false},
-  {id:"R5", name:"Switchers", madeFrom:["V4", "V5"], value:[90.0, 10.0], decimals:0, pending:false},
-  {id:"R6", name:"Maids per product", madeFrom:["V13", "V14", "V15", "V16"], value:[64.1, 28.2, 5.5, 2.2], decimals:1, pending:false},
-  {id:"R7", name:"Clients per product", madeFrom:["V1", "V2+V4", "V3+V5", "M1", "M2"], value:[65.2, 26.1, 4.6, 2.1, 2.0], decimals:1, pending:false},
-  {id:"R8", name:"Maid sign-up mix", madeFrom:["V6", "V7", "V8"], value:[78.5, 19.5, 2.0], decimals:1, pending:false},
-  {id:"R9", name:"MV vs Travel Assist", madeFrom:["V11", "V12"], value:[92.3, 7.7], decimals:1, pending:true},
-  {id:"R10", name:"Clients per product, no Part Time", madeFrom:["V1", "V2+V4", "V3+V5", "M2"], value:[66.6, 26.7, 4.7, 2.0], decimals:1, pending:false},
-];
-const ASSUMPTIONS = [
-  {id:"S1", name:"Dev: sign-up vs ongoing", value:[30, 70], usedBy:"Jira Administration"},
-  {id:"S2", name:"Dev: client vs maid", value:[50, 50], usedBy:"Jira Administration"},
-  {id:"S3", name:"Visa: own maid vs we found her", value:[70, 30], usedBy:"Visa"},
-  {id:"S4", name:"Visa: sign-up vs ongoing", value:[75, 25], usedBy:"Visa"},
-  {id:"S5", name:"Accommodation: ongoing vs sign-up", value:[70, 30], usedBy:"Accommodation Management"},
-  {id:"S6", name:"Chatbot: maid bots share", value:[20, 80], usedBy:"Chatbot & LLM Development"},
-  {id:"S7", name:"Chatbot: maid bot sign-up vs ongoing", value:[50, 50], usedBy:"Chatbot & LLM Development"},
-  {id:"S8", name:"Chatbot: CC vs MV", value:[50, 50], usedBy:"Chatbot & LLM Development"},
-  {id:"S9", name:"Chatbot: ongoing vs sign-up", value:[60, 40], usedBy:"Chatbot & LLM Development"},
-  {id:"S10", name:"Chatbot: points given to Travel Assist", value:2, usedBy:"Chatbot & LLM Development"},
-  {id:"S11", name:"DDC: MV vs CC", value:[50, 50], usedBy:"DDC"},
-  {id:"S12", name:"DDC: Travel Assist share of the MV half", value:10, usedBy:"DDC"},
-  {id:"S13", name:"Other Nationalities: maid sign-up share", value:70, usedBy:"Other Nationalities"},
-  {id:"S14", name:"Other Nationalities: the rest", value:[10, 10, 10], usedBy:"Other Nationalities"},
-  {id:"S15", name:"Decimals in the matrix", value:1, usedBy:"every formula department"},
-  {id:"S16", name:"Unmapped items", value:"drop them, scale the rest back to 100", usedBy:"Broadcasting, Ziwo, ChatCC"},
-  {id:"S17", name:"Excellence departments, flat %", value:6.25, usedBy:"Customer Ops Excellence, AI Center of Excellence"},
+  {id:"R1", name:"CC clients", madeFrom:["V2", "V3"], value:[82.0, 18.0]},
+  {id:"R2", name:"CC sales", madeFrom:["V9", "V10"], value:[75.0, 25.0]},
+  {id:"R3", name:"CC maids", madeFrom:["V6", "V7"], value:[80.1, 19.9]},
+  {id:"R4", name:"CC seekers", madeFrom:["V17", "V18"], value:[64.0, 36.0]},
+  {id:"R5", name:"Switchers", madeFrom:["V4", "V5"], value:[90.0, 10.0]},
+  {id:"R6", name:"Maids per product", madeFrom:["V13", "V14", "V15", "V16"], value:[64.1, 28.2, 5.5, 2.2]},
+  {id:"R7", name:"Clients per product", madeFrom:["V1", "V2+V4", "V3+V5", "V19", "V20"], value:[66.2, 26.6, 4.7, 2.2, 0.3]},
+  {id:"R8", name:"Maid onboarding mix", madeFrom:["V6", "V7", "V8"], value:[78.5, 19.5, 2.0]},
+  {id:"R9", name:"MV vs Travel Assist", madeFrom:["V11", "V12"], value:[98.1, 1.9]},
+  {id:"R10", name:"Clients per product, no Part Time", madeFrom:["V1", "V2+V4", "V3+V5", "V20"], value:[67.7, 27.2, 4.8, 0.3]},
+  {id:"R11", name:"Taxi split", madeFrom:["V24", "V25", "V32"], value:[61.0, 27.7, 11.3]},
+  {id:"R12", name:"Recruitment mix", madeFrom:["V26", "V27"], value:[70.3, 29.7]},
+  {id:"R13", name:"MV vs CC sales", madeFrom:["V11", "V9+V10"], value:[50.7, 49.3]},
+  {id:"R14", name:"Visa case mix", madeFrom:["V28", "V29", "V30", "V31"], value:[22.9, 60.8, 13.1, 3.2]},
 ];
 
 const FIXED_DEPTS = [
@@ -1015,49 +981,47 @@ const FIXED_DEPTS = [
   {name:"Part Time Cleaner Management", kind:"single", proposed:[0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 100, 0.0, 0.0]},
   {name:"Customer Operations Excellence", kind:"flat", proposed:[6.25, 6.25, 6.25, 6.25, 6.25, 6.25, 6.25, 6.25, 6.25, 6.25, 6.25, 6.25, 6.25, 6.25, 6.25, 6.25]},
   {name:"AI Center of Excellence", kind:"flat", proposed:[6.25, 6.25, 6.25, 6.25, 6.25, 6.25, 6.25, 6.25, 6.25, 6.25, 6.25, 6.25, 6.25, 6.25, 6.25, 6.25]},
+  {name:"Jira Administration", kind:"flat", proposed:[6.25, 6.25, 6.25, 6.25, 6.25, 6.25, 6.25, 6.25, 6.25, 6.25, 6.25, 6.25, 6.25, 6.25, 6.25, 6.25]},
   {name:"MaidMatch", kind:"zero", proposed:[0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]},
   {name:"Founder", kind:"zero", proposed:[0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]},
   {name:"Maidsat Global", kind:"zero", proposed:[0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]},
   {name:"WEEL", kind:"zero", proposed:[0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]},
   {name:"Auditing", kind:"zero", proposed:[0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]},
 ];
+
 const FORMULA_DEPTS = [
-  {name:"CSA & Trainers", group:"Group 1", uses:"R1", desc:"One split, live-in vs live-out", pending:false, proposed:[0.0, 0.0, 0.0, 82.0, 0.0, 0.0, 0.0, 18.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]},
-  {name:"CC Resolvers Chatbot", group:"Group 1", uses:"R1", desc:"One split, live-in vs live-out", pending:false, proposed:[0.0, 0.0, 0.0, 82.0, 0.0, 0.0, 0.0, 18.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]},
-  {name:"CC Sales", group:"Group 1", uses:"R4", desc:"One split, live-in vs live-out", pending:false, proposed:[0.0, 0.0, 64.0, 0.0, 0.0, 0.0, 36.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]},
-  {name:"CC Long Term", group:"Group 1", uses:"R5", desc:"One split, live-in vs live-out", pending:false, proposed:[0.0, 0.0, 0.0, 90.0, 0.0, 0.0, 0.0, 10.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]},
-  {name:"CC Maid Retention", group:"Group 1", uses:"R3", desc:"One split, live-in vs live-out", pending:false, proposed:[0.0, 0.0, 0.0, 0.0, 0.0, 80.1, 0.0, 0.0, 0.0, 19.9, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]},
-  {name:"CC Maid Offboarding", group:"Group 1", uses:"R3", desc:"One split, live-in vs live-out", pending:false, proposed:[0.0, 0.0, 0.0, 0.0, 0.0, 80.1, 0.0, 0.0, 0.0, 19.9, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]},
-  {name:"CC Delighters Chatbot", group:"Group 1", uses:"R3", desc:"One split, live-in vs live-out \u2014 exception: maid ratio, client columns", pending:false, proposed:[0.0, 0.0, 0.0, 80.1, 0.0, 0.0, 0.0, 19.9, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]},
-  {name:"CC L1", group:"Group 1", uses:"R3", desc:"One split, live-in vs live-out \u2014 exception: maid ratio, client columns", pending:false, proposed:[0.0, 0.0, 0.0, 80.1, 0.0, 0.0, 0.0, 19.9, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]},
-  {name:"Maid Recruitment (Maids.AT)", group:"Group 1", uses:"M3", desc:"One split, live-in vs live-out", pending:false, proposed:[0.0, 0.0, 0.0, 0.0, 95, 0.0, 0.0, 0.0, 5, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]},
-  {name:"Taxi Logistics", group:"Group 1", uses:"M4", desc:"One split, live-in vs live-out", pending:false, proposed:[0.0, 0.0, 0.0, 0.0, 0.0, 50, 0.0, 0.0, 0.0, 50, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]},
-  {name:"Delighters L1", group:"Group 2", uses:"R6", desc:"Maids per product", pending:false, proposed:[0.0, 64.1, 0.0, 0.0, 0.0, 28.2, 0.0, 0.0, 0.0, 5.5, 0.0, 0.0, 0.0, 0.0, 0.0, 2.2]},
-  {name:"Doctors L1", group:"Group 2", uses:"R6", desc:"Maids per product", pending:false, proposed:[0.0, 64.1, 0.0, 0.0, 0.0, 28.2, 0.0, 0.0, 0.0, 5.5, 0.0, 0.0, 0.0, 0.0, 0.0, 2.2]},
-  {name:"Doctors", group:"Group 2", uses:"R6", desc:"Maids per product", pending:false, proposed:[0.0, 64.1, 0.0, 0.0, 0.0, 28.2, 0.0, 0.0, 0.0, 5.5, 0.0, 0.0, 0.0, 0.0, 0.0, 2.2]},
-  {name:"Doctors Chatbot", group:"Group 2", uses:"R6", desc:"Maids per product", pending:false, proposed:[0.0, 64.1, 0.0, 0.0, 0.0, 28.2, 0.0, 0.0, 0.0, 5.5, 0.0, 0.0, 0.0, 0.0, 0.0, 2.2]},
-  {name:"Money Collection", group:"Group 3", uses:"R7", desc:"Clients per product \u2014 client side", pending:false, proposed:[0.0, 65.2, 0.0, 26.1, 0.0, 0.0, 0.0, 4.6, 0.0, 0.0, 0.0, 2.1, 0.0, 0.0, 0.0, 2.0]},
-  {name:"Money Control", group:"Group 3", uses:"R7", desc:"Clients per product \u2014 client side", pending:false, proposed:[0.0, 65.2, 0.0, 26.1, 0.0, 0.0, 0.0, 4.6, 0.0, 0.0, 0.0, 2.1, 0.0, 0.0, 0.0, 2.0]},
-  {name:"Police and Control", group:"Group 3", uses:"R7", desc:"Clients per product \u2014 client side", pending:false, proposed:[0.0, 65.2, 0.0, 26.1, 0.0, 0.0, 0.0, 4.6, 0.0, 0.0, 0.0, 2.1, 0.0, 0.0, 0.0, 2.0]},
-  {name:"Risk", group:"Group 3", uses:"R7", desc:"Clients per product \u2014 client side", pending:false, proposed:[0.0, 65.2, 0.0, 26.1, 0.0, 0.0, 0.0, 4.6, 0.0, 0.0, 0.0, 2.1, 0.0, 0.0, 0.0, 2.0]},
-  {name:"Cybersecurity", group:"Group 3", uses:"R7", desc:"Clients per product \u2014 client side", pending:false, proposed:[0.0, 65.2, 0.0, 26.1, 0.0, 0.0, 0.0, 4.6, 0.0, 0.0, 0.0, 2.1, 0.0, 0.0, 0.0, 2.0]},
-  {name:"Emirati Staff", group:"Group 3", uses:"R7", desc:"Clients per product \u2014 client side", pending:false, proposed:[0.0, 65.2, 0.0, 26.1, 0.0, 0.0, 0.0, 4.6, 0.0, 0.0, 0.0, 2.1, 0.0, 0.0, 0.0, 2.0]},
-  {name:"Procurement", group:"Group 3", uses:"R7", desc:"Clients per product \u2014 client side", pending:false, proposed:[0.0, 65.2, 0.0, 26.1, 0.0, 0.0, 0.0, 4.6, 0.0, 0.0, 0.0, 2.1, 0.0, 0.0, 0.0, 2.0]},
-  {name:"Maid Payroll", group:"Group 3", uses:"R7", desc:"Clients per product \u2014 maid side", pending:false, proposed:[0.0, 65.2, 0.0, 0.0, 0.0, 26.1, 0.0, 0.0, 0.0, 4.6, 0.0, 0.0, 0.0, 2.1, 0.0, 2.0]},
-  {name:"PRO Services", group:"Group 3", uses:"R10", desc:"Clients per product \u2014 no Part Time", pending:false, proposed:[0.0, 66.6, 0.0, 26.7, 0.0, 0.0, 0.0, 4.7, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 2.0]},
-  {name:"Jira Administration", group:"Group 4", uses:"M5 + S1 + S2", desc:"Development", pending:false, proposed:[13.5, 31.5, 6.0, 14.0, 6.0, 14.0, 1.5, 3.5, 1.5, 3.5, 0.45, 1.05, 0.45, 1.05, 0.6, 1.4]},
-  {name:"Other Nationalities", group:"Group 5", uses:"S13 + S14", desc:"Own steps", pending:false, proposed:[0.0, 0.0, 10.0, 10.0, 70, 10.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]},
-  {name:"Maid Onboarding", group:"Group 5", uses:"R8", desc:"Own steps", pending:false, proposed:[0.0, 0.0, 0.0, 0.0, 78.5, 0.0, 0.0, 0.0, 19.5, 0.0, 0.0, 0.0, 2.0, 0.0, 0.0, 0.0]},
-  {name:"Accommodation Management", group:"Group 5", uses:"S5 + R8", desc:"Own steps", pending:false, proposed:[0.0, 0.0, 0.0, 0.0, 23.55, 70, 0.0, 0.0, 5.85, 0.0, 0.0, 0.0, 0.6, 0.0, 0.0, 0.0]},
-  {name:"DDC", group:"Group 5", uses:"S11 + S12 + R2", desc:"Own steps", pending:false, proposed:[45.0, 0.0, 37.5, 0.0, 0.0, 0.0, 12.5, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 5.0, 0.0]},
-  {name:"Visa", group:"Group 5", uses:"S3 + S4 + R10 + R8", desc:"Own steps", pending:false, proposed:[50.969, 16.99, 0.0, 0.0, 17.663, 5.888, 0.0, 0.0, 4.387, 1.462, 0.0, 0.0, 0.45, 0.15, 1.531, 0.51]},
-  {name:"Chatbot & LLM Development", group:"Group 5", uses:"S6 + R3 + S7 + S8 + S9 + S10 + R1", desc:"Own steps", pending:false, proposed:[15.2, 22.8, 13.12, 19.68, 8.01, 8.01, 2.88, 4.32, 1.99, 1.99, 0.0, 0.0, 0.0, 0.0, 0.8, 1.2]},
-  {name:"Broadcasting", group:"Group 5", uses:"M8 + R1 + R3 + M3 + R9 + S16", desc:"Own steps \u2014 PENDING: needs V11/V12", pending:true, proposed:[2.8, 14.9, 12.1, 6.6, 6.3, 36.9, 2.6, 1.4, 0.3, 9.1, 0.2, 2.9, 0, 2.5, 0.2, 1.2]},
-  {name:"Ziwo", group:"Group 5", uses:"M7 + R2 + R1 + R10 + M3 + R9 + S16", desc:"Own steps \u2014 PENDING: needs V11/V12", pending:true, proposed:[14.8, 7.3, 35.6, 22, 1.9, 0.2, 11.8, 4.8, 0.1, 0, 0, 0, 0, 0, 1.2, 0.3]},
-  {name:"ChatCC", group:"Group 5", uses:"M6 + R2 + R1 + M3 + R3 + R9 + S16", desc:"Own steps \u2014 PENDING: needs V11/V12", pending:true, proposed:[2.1, 22.2, 6.1, 7.8, 29.5, 16, 2, 1.7, 1.6, 4, 0.6, 1.7, 0, 2.6, 0.2, 1.9]},
-  {name:"Staff Recruitment", group:"Group 6", uses:"\u2014", desc:"% = Σ(employee × their own department's split) ÷ every employee outside CEO and Founder, weighted by headcount — not a fixed number, recalculated from however many people exist right now.", pending:true, proposed:[11.5, 24.5, 8.8, 15.6, 8, 8.5, 3, 4, 1.2, 3, 1.3, 3.4, 0.2, 5, 0.3, 1.7]},
-  {name:"Office Staff Payroll", group:"Group 6", uses:"\u2014", desc:"% = Σ(employee × their own department's split) ÷ every employee outside CEO and Founder, weighted by headcount — not a fixed number, recalculated from however many people exist right now.", pending:true, proposed:[11.5, 24.5, 8.8, 15.6, 8, 8.5, 3, 4, 1.2, 3, 1.3, 3.4, 0.2, 5, 0.3, 1.7]},
-  {name:"Beirut Office Management", group:"Group 6", uses:"\u2014", desc:"Same company-wide average as Staff Recruitment and Office Staff Payroll — stands in until a Beirut-only roster exists.", pending:true, proposed:[11.5, 24.5, 8.8, 15.6, 8, 8.5, 3, 4, 1.2, 3, 1.3, 3.4, 0.2, 5, 0.3, 1.7]},
+  {name:"CSA & Trainers", uses:"R1", desc:"One split, live-in vs live-out", pending:false, proposed:[0.0, 0.0, 0.0, 82.0, 0.0, 0.0, 0.0, 18.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]},
+  {name:"CC Resolvers Chatbot", uses:"R1", desc:"One split, live-in vs live-out", pending:false, proposed:[0.0, 0.0, 0.0, 82.0, 0.0, 0.0, 0.0, 18.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]},
+  {name:"CC Sales", uses:"R4", desc:"One split, live-in vs live-out \u2014 selling is onboarding", pending:false, proposed:[0.0, 0.0, 64.0, 0.0, 0.0, 0.0, 36.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]},
+  {name:"CC Long Term", uses:"R5", desc:"One split, live-in vs live-out \u2014 the contracts switchers moved to", pending:false, proposed:[0.0, 0.0, 0.0, 90.0, 0.0, 0.0, 0.0, 10.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]},
+  {name:"CC Maid Retention", uses:"R3", desc:"One split, live-in vs live-out \u2014 retention only applies to a maid already working", pending:false, proposed:[0.0, 0.0, 0.0, 0.0, 0.0, 80.1, 0.0, 0.0, 0.0, 19.9, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]},
+  {name:"CC Maid Offboarding", uses:"R3", desc:"One split, live-in vs live-out", pending:false, proposed:[0.0, 0.0, 0.0, 0.0, 0.0, 80.1, 0.0, 0.0, 0.0, 19.9, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]},
+  {name:"CC Delighters Chatbot", uses:"R3", desc:"Exception: uses the maid ratio but lands on client columns \u2014 intentional, do not change", pending:false, proposed:[0.0, 0.0, 0.0, 80.1, 0.0, 0.0, 0.0, 19.9, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]},
+  {name:"CC L1", uses:"R3", desc:"Exception: uses the maid ratio but lands on client columns \u2014 intentional, do not change. Distinct from the Fixed \u201cCC Live-in L1\u201d and \u201cCC Live-out L1\u201d.", pending:false, proposed:[0.0, 0.0, 0.0, 80.1, 0.0, 0.0, 0.0, 19.9, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]},
+  {name:"Maid Recruitment (Maids.AT)", uses:"R12", desc:"Finding a maid is her cost, before any client is attached", pending:false, proposed:[0.0, 0.0, 0.0, 0.0, 70.3, 0.0, 0.0, 0.0, 29.7, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]},
+  {name:"Delighters L1", uses:"R6", desc:"Maids per product, all ongoing", pending:false, proposed:[0.0, 64.1, 0.0, 0.0, 0.0, 28.2, 0.0, 0.0, 0.0, 5.5, 0.0, 0.0, 0.0, 0.0, 0.0, 2.2]},
+  {name:"Doctors L1", uses:"R6", desc:"Maids per product, all ongoing", pending:false, proposed:[0.0, 64.1, 0.0, 0.0, 0.0, 28.2, 0.0, 0.0, 0.0, 5.5, 0.0, 0.0, 0.0, 0.0, 0.0, 2.2]},
+  {name:"Doctors", uses:"R6", desc:"Maids per product, all ongoing", pending:false, proposed:[0.0, 64.1, 0.0, 0.0, 0.0, 28.2, 0.0, 0.0, 0.0, 5.5, 0.0, 0.0, 0.0, 0.0, 0.0, 2.2]},
+  {name:"Doctors Chatbot", uses:"R6", desc:"Maids per product, all ongoing", pending:false, proposed:[0.0, 64.1, 0.0, 0.0, 0.0, 28.2, 0.0, 0.0, 0.0, 5.5, 0.0, 0.0, 0.0, 0.0, 0.0, 2.2]},
+  {name:"Money Collection", uses:"R7", desc:"Clients per product, client side, all ongoing", pending:false, proposed:[0.0, 66.2, 0.0, 26.6, 0.0, 0.0, 0.0, 4.7, 0.0, 0.0, 0.0, 2.2, 0.0, 0.0, 0.0, 0.3]},
+  {name:"Money Control", uses:"R7", desc:"Clients per product, client side, all ongoing", pending:false, proposed:[0.0, 66.2, 0.0, 26.6, 0.0, 0.0, 0.0, 4.7, 0.0, 0.0, 0.0, 2.2, 0.0, 0.0, 0.0, 0.3]},
+  {name:"Police and Control", uses:"R7", desc:"Clients per product, client side, all ongoing", pending:false, proposed:[0.0, 66.2, 0.0, 26.6, 0.0, 0.0, 0.0, 4.7, 0.0, 0.0, 0.0, 2.2, 0.0, 0.0, 0.0, 0.3]},
+  {name:"Risk", uses:"R7", desc:"Clients per product, client side, all ongoing", pending:false, proposed:[0.0, 66.2, 0.0, 26.6, 0.0, 0.0, 0.0, 4.7, 0.0, 0.0, 0.0, 2.2, 0.0, 0.0, 0.0, 0.3]},
+  {name:"Cybersecurity", uses:"R7", desc:"Clients per product, client side, all ongoing", pending:false, proposed:[0.0, 66.2, 0.0, 26.6, 0.0, 0.0, 0.0, 4.7, 0.0, 0.0, 0.0, 2.2, 0.0, 0.0, 0.0, 0.3]},
+  {name:"Emirati Staff", uses:"R7", desc:"Clients per product, client side, all ongoing", pending:false, proposed:[0.0, 66.2, 0.0, 26.6, 0.0, 0.0, 0.0, 4.7, 0.0, 0.0, 0.0, 2.2, 0.0, 0.0, 0.0, 0.3]},
+  {name:"Procurement", uses:"R7", desc:"Clients per product, client side, all ongoing", pending:false, proposed:[0.0, 66.2, 0.0, 26.6, 0.0, 0.0, 0.0, 4.7, 0.0, 0.0, 0.0, 2.2, 0.0, 0.0, 0.0, 0.3]},
+  {name:"Maid Payroll", uses:"R7", desc:"Clients per product, maid side \u2014 paying a maid is ongoing", pending:false, proposed:[0.0, 66.2, 0.0, 0.0, 0.0, 26.6, 0.0, 0.0, 0.0, 4.7, 0.0, 0.0, 0.0, 2.2, 0.0, 0.3]},
+  {name:"PRO Services", uses:"R10", desc:"Clients per product, no Part Time \u2014 PRO Services doesn\u2019t serve it", pending:false, proposed:[0.0, 67.7, 0.0, 27.2, 0.0, 0.0, 0.0, 4.8, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.3]},
+  {name:"Maid Onboarding", uses:"R8", desc:"Split by maid onboarding mix, never a client column", pending:false, proposed:[0.0, 0.0, 0.0, 0.0, 78.5, 0.0, 0.0, 0.0, 19.5, 0.0, 0.0, 0.0, 2.0, 0.0, 0.0, 0.0]},
+  {name:"DDC", uses:"R13 + R2 + R9", desc:"MV vs CC by R13 (measured from sales), CC half by R2, MV half gives Travel Assist a slice via R9. All onboarding, no Part Time.", pending:false, proposed:[49.69, 0.0, 37.06, 0.0, 0.0, 0.0, 12.28, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.97, 0.0]},
+  {name:"Visa", uses:"R14 + R9 + R8", desc:"Split by visa case mix (initial/renewal \u00d7 own/sourced maid). Initial \u2192 onboarding, renewal \u2192 ongoing. Own maid \u2192 MV/TA columns, sourced maid \u2192 maid columns only.", pending:false, proposed:[22.43, 12.8, 0.0, 0.0, 47.83, 2.5, 0.0, 0.0, 11.86, 0.62, 0.0, 0.0, 1.22, 0.06, 0.43, 0.25]},
+  {name:"Taxi Logistics", uses:"R11", desc:"Transport is a maid cost. MV lands on MV_ONG since the maid is the client there.", pending:false, proposed:[0.0, 11.31, 0.0, 0.0, 0.0, 60.96, 0.0, 0.0, 0.0, 27.73, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]},
+  {name:"Broadcasting", uses:"V23 + R1 + R3 + R12 + R9", desc:"Split by audience team, each lands by its matching ratio, MV gives Travel Assist a slice via R9.", exampleStatus:"current", exampleNote:"Worked example, not a saved row. Computed from the 25 Aug data so a builder can test their implementation against something \u2014 the refresh overwrites it. Built from R1, R3, R12, R9, none of which depend on V20, so this row stays current regardless of V20\u2019s value.", pending:false, proposed:[2.78, 14.84, 12.03, 6.59, 6.30, 36.79, 2.64, 1.45, 0.33, 9.14, 0.19, 2.91, 0.02, 2.52, 0.23, 1.24]},
+  {name:"Ziwo", uses:"V22 + R7 + R9", desc:"Split by who was on the phone and which team was calling, weighted by talk time. Team is inferred from the agent's usual pattern when blank (76% of calls carry no team).", exampleStatus:"current", exampleNote:"Worked example, not a saved row. Real computed row, verified to total exactly 100.00, weighted by talk time over the last 12 months. Coverage: 32,955 customer talk-hours in the window, 32,126 placed by direct evidence (97.5%); the remaining 829 hours (unidentified outbound calls) are spread across the placed buckets in proportion, the same rule every list variable follows. A further 186 hours of internal/eavesdrop calls are excluded as not customer work. Closed.", pending:false, proposed:[12.48, 12.70, 9.31, 34.70, 1.54, 10.64, 3.08, 7.06, 0.65, 6.94, 0, 0.36, 0, 0, 0.24, 0.30]},
+  {name:"ChatCC", uses:"V21 + R2 + R1 + R12 + R7 + R9", desc:"Split by who was on the other end and which department handled it, with the product read off the person's own record.", exampleStatus:"current", exampleNote:"Worked example, not a saved row. Real computed row, totals exactly 100.00, from the last 12 months of CHATCC_SILVER.CC_CONVERSATIONS. Coverage: 6,695,042 conversations in the window, 6,689,604 placed by direct evidence (99.92%); 5,422,506 carried a department, 1,215,000 more placed through their skill or counterparty. The remaining 5,438 (0.08%) are spread across the placed buckets in proportion. Closed.", pending:false, proposed:[3.10, 26.04, 6.35, 7.60, 21.44, 12.22, 2.10, 2.04, 9.06, 6.21, 0.72, 1.39, 0, 1.15, 0.06, 0.52]},
+  {name:"Staff Recruitment", uses:"headcount-weighted average", desc:"No variable, no ratio \u2014 the average of every other department\u2019s row, weighted by cost", pending:false, proposed:[11.5, 24.5, 8.8, 15.6, 8, 8.5, 3, 4, 1.2, 3, 1.3, 3.4, 0.2, 5, 0.3, 1.7]},
+  {name:"Office Staff Payroll", uses:"headcount-weighted average", desc:"No variable, no ratio \u2014 the average of every other department\u2019s row, weighted by cost", pending:false, proposed:[11.5, 24.5, 8.8, 15.6, 8, 8.5, 3, 4, 1.2, 3, 1.3, 3.4, 0.2, 5, 0.3, 1.7]},
+  {name:"Beirut Office Management", uses:"headcount-weighted average", desc:"No variable, no ratio \u2014 the average of every other department\u2019s row, weighted by cost", pending:false, proposed:[11.5, 24.5, 8.8, 15.6, 8, 8.5, 3, 4, 1.2, 3, 1.3, 3.4, 0.2, 5, 0.3, 1.7]},
 ];
 
 function fmtPct(n){ return (Math.round(n*10)/10).toString().replace(/\.0$/,''); }
@@ -1116,12 +1080,12 @@ function renderHj(){
     const hasChange = JSON.stringify(r.proposed) !== JSON.stringify(r.savedProposed);
     return '<div class="hj-card">'
       + '<div class="hj-card-head">'
-        + '<div><div class="hj-name">'+r.name+'</div><div class="hj-pil">'+r.pil+'</div></div>'
+        + '<div><div class="hj-name">'+r.name+'</div><div class="hj-pil">'+r.pil+' <span style="color:var(--ink-soft);font-weight:400;">\u00b7 owner, auto-assigned: '+(r.name==='CEO'?'the CEO':'reports to the CEO')+'</span></div></div>'
         + '<div class="hj-spacer"></div>'
         + '<span class="hj-total-pill '+(ok?'ok':'bad')+'" id="hjTotal-'+r.id+'">Total '+fmtPct(total)+'%</span>'
         + '<span id="hjActions-'+r.id+'">'+hjActionsHtml(r, ok, hasChange)+'</span>'
       + '</div>'
-      + (hasChange ? '<div class="hj-deadline-note">Confirm by '+HJ_CYCLE_DEADLINE+', or this edit is discarded automatically and the last confirmed allocation is kept.</div>' : '')
+      + (hasChange ? '<div class="hj-deadline-note">Confirm by '+hjDeadlineLabel()+', or this edit is discarded automatically and the last confirmed allocation is kept.</div>' : '')
       + '<div class="hj-groups">'+renderHjGroups(r.id, r.proposed, false)+'</div>'
       + '</div>';
   }).join('');
@@ -1158,10 +1122,10 @@ function revertHj(id){
   renderHj();
 }
 
-/* ============== Fixed Formulas ============== */
+/* ============== Fixed & Formula (shared view helpers) ============== */
 let ffOpenIndex = null;
 
-/* ============== Fixed (28) ============== */
+/* ============== Fixed (29) ============== */
 function renderFixed(){
   document.getElementById('fixedBody').innerHTML = FIXED_DEPTS.map((d,i)=>{
     const total = sumArr(d.proposed);
@@ -1176,7 +1140,7 @@ function renderFixed(){
       + '</tr>';
     if(fixedOpenIndex === i){
       rows += '<tr class="ff-detail-row"><td colspan="4">'
-        + '<div style="font-size:12px;color:var(--ink-soft);padding:0 2px 10px;">Fixed and Formula rows are reference only \u2014 they can\u2019t be edited here. To change this department\u2019s split, reclassify it to Human Judgment on Configuration first.</div>'
+        + '<div style="font-size:12px;color:var(--ink-soft);padding:0 2px 10px;">Fixed and Formula rows are reference only \u2014 they can\u2019t be edited here. A Fixed row is changed by the data team; a Formula row only changes when the Variables behind it change.</div>'
         + '<div class="hj-groups" style="padding:0 0 14px;">'+renderHjGroups('fixed'+i, d.proposed, true)+'</div>'
         + '<div class="ff-detail-actions">'
           + '<span style="flex:1;font-size:13px;font-weight:700;">Total: '+fmtPct(total)+'%</span>'
@@ -2191,39 +2155,49 @@ function applyOverhead(){
   renderFormula();
 }
 
-/* ============== Formula (36) ============== */
+/* ============== Formula (32) ============== */
+const BUCKET_SHORT = ['MV Onboarding','MV Ongoing','CC Live-in Client Onboarding','CC Live-in Client Ongoing','CC Live-in Maid Onboarding','CC Live-in Maid Ongoing','CC Live-out Client Onboarding','CC Live-out Client Ongoing','CC Live-out Maid Onboarding','CC Live-out Maid Ongoing','Part Time Client Onboarding','Part Time Client Ongoing','Part Time Maid Onboarding','Part Time Maid Ongoing','Travel Assist Onboarding','Travel Assist Ongoing'];
+function landsOn(row){
+  const idx = row.map((v,i)=>v>0?i:-1).filter(i=>i>=0);
+  if(idx.length===16) return 'All 16 buckets';
+  if(idx.length>5) return idx.length+' buckets \u2014 see row';
+  return idx.map(i=>BUCKET_SHORT[i]).join(' \u00b7 ');
+}
 let formulaOpenIndex = null;
 function renderFormula(){
-  const missingV11V12 = ERP_VARIABLES.find(v=>v.id==='V11').value===null || ERP_VARIABLES.find(v=>v.id==='V12').value===null;
   const noteEl = document.getElementById('formulaPendingNote');
   if(noteEl){
-    noteEl.innerHTML = missingV11V12
-      ? '<p class="subpage-note" style="color:var(--ink-soft);">Note: V11 and V12 (MV and Travel Assist sales, 12 months) aren\'t in yet, so R9 and 3 departments \u2014 Broadcasting, Ziwo, ChatCC \u2014 are on placeholder numbers for now. This note clears itself once real numbers are entered.</p>'
-      : '';
+    noteEl.innerHTML = '<p class="subpage-note" style="color:var(--ink-soft);">Note: Broadcasting, Ziwo, and ChatCC below are all real computed worked examples, verified to sum to 100 \u2014 they\u2019re here to test against, not saved rows, and the refresh overwrites them once live V21/V22/V23 data flows through.</p>';
   }
   document.getElementById('formulaBody').innerHTML = FORMULA_DEPTS.map((d,i)=>{
     const total = sumArr(d.proposed);
-    const v11v12Missing = ['Broadcasting','Ziwo','ChatCC'].includes(d.name) && (ERP_VARIABLES.find(v=>v.id==='V11').value===null || ERP_VARIABLES.find(v=>v.id==='V12').value===null);
-    const pendingTag = v11v12Missing ? ' <span class="source-tag" style="margin-left:6px;background:#f1f2f5;color:var(--ink-soft);">placeholder</span>'
-      : d.pending ? ' <span class="source-tag" style="margin-left:6px;background:#f1f2f5;color:var(--ink-soft);">rule pending</span>' : '';
+    let statusTag = '';
+    if(d.exampleStatus === 'current') statusTag = ' <span class="source-tag" style="margin-left:6px;background:#e7f0ff;color:#1d4ed8;">worked example</span>';
+    else if(d.exampleStatus === 'stale') statusTag = ' <span class="source-tag" style="margin-left:6px;background:#fef3c7;color:#92400d;">worked example \u2014 stale</span>';
+    else if(d.exampleStatus === 'none') statusTag = ' <span class="source-tag" style="margin-left:6px;background:#fdeaea;color:var(--red);">no example</span>';
     let rows = '<tr class="data-row">'
-      + '<td>'+d.name+pendingTag+'</td>'
-      + '<td style="color:var(--ink-soft);font-size:12.5px;">'+d.group+'</td>'
+      + '<td>'+d.name+statusTag+'</td>'
+      + '<td style="color:var(--ink-soft);font-size:12.5px;">'+landsOn(d.proposed)+'</td>'
       + '<td style="color:var(--ink-soft);font-size:12.5px;">'+d.uses+'</td>'
-      + '<td>'+fmtPct(total)+'%</td>'
+      + '<td>'+(d.exampleStatus==='none' ? '\u2014' : fmtPct(total)+'%')+'</td>'
       + '<td><button class="link-btn" onclick="toggleFormulaEdit('+i+')">View</button></td>'
       + '</tr>';
     if(formulaOpenIndex === i){
+      const noteBg = d.exampleStatus==='stale' ? '#fef3c7' : d.exampleStatus==='none' ? '#fdeaea' : d.exampleStatus==='current' ? '#e7f0ff' : null;
+      const noteColor = d.exampleStatus==='stale' ? '#92400d' : d.exampleStatus==='none' ? 'var(--red)' : d.exampleStatus==='current' ? '#1d4ed8' : null;
       rows += '<tr class="ff-detail-row"><td colspan="5">'
         + '<div class="dept-info-panel">'
-          + '<div class="dept-info-row"><span class="dept-info-label">Group</span><span class="dept-info-value">'+d.group+'</span></div>'
+          + '<div class="dept-info-row"><span class="dept-info-label">Lands on</span><span class="dept-info-value">'+landsOn(d.proposed)+'</span></div>'
           + '<div class="dept-info-row"><span class="dept-info-label">Built From</span><span class="dept-info-value">'+d.uses+'</span></div>'
           + '<div class="dept-info-row"><span class="dept-info-label">Notes</span><span class="dept-info-value">'+d.desc+'</span></div>'
         + '</div>'
+        + (d.exampleNote ? '<div style="font-size:12.5px;padding:10px 12px;margin:0 0 12px;border-radius:8px;background:'+noteBg+';color:'+noteColor+';">\u26a0 '+d.exampleNote+'</div>' : '')
         + '<div style="font-size:12px;color:var(--ink-soft);padding:0 2px 10px;">This row is worked out, never typed by hand. To change it, change what feeds it on Configuration, then Refresh.</div>'
-        + '<div class="hj-groups" style="padding:0 0 14px;">'+renderHjGroups('formulaview'+i, d.proposed, true)+'</div>'
+        + (d.exampleStatus==='none'
+            ? '<div class="txn-empty" style="margin:0 0 14px;">No row to show \u2014 see the note above.</div>'
+            : '<div class="hj-groups" style="padding:0 0 14px;">'+renderHjGroups('formulaview'+i, d.proposed, true)+'</div>')
         + '<div class="ff-detail-actions">'
-          + '<span style="flex:1;font-size:13px;font-weight:700;">Total: '+fmtPct(total)+'%</span>'
+          + '<span style="flex:1;font-size:13px;font-weight:700;">Total: '+(d.exampleStatus==='none' ? '\u2014' : fmtPct(total)+'%')+'</span>'
           + '<button class="btn btn-outline" onclick="toggleFormulaEdit('+i+')">Close</button>'
         + '</div>'
         + '</td></tr>';
@@ -2235,7 +2209,6 @@ function toggleFormulaEdit(i){ formulaOpenIndex = (formulaOpenIndex===i)?null:i;
 
 /* ============== Refresh \u2192 Preview \u2192 Apply ============== */
 let pendingRefresh = null;
-let lastRefreshDiff = [];
 function runAutomaticRefresh(){
   // Simulates what happened automatically at 23:58 on the last day of the month: Check, then recompute.
   const staleFlags = [];
@@ -2255,46 +2228,6 @@ function runAutomaticRefresh(){
     }
   });
   applyOverhead(); // recomputed last, since it depends on every other department's row
-  lastRefreshDiff = FORMULA_DEPTS.map((d,i)=>{
-    const b = before[i].row, a = d.proposed;
-    if(JSON.stringify(b)===JSON.stringify(a)) return null;
-    return {name:d.name, before:b, after:a};
-  }).filter(Boolean);
-  lastRefreshDiff.staleFlags = staleFlags;
-}
-function openRefreshModal(){
-  const diffRows = lastRefreshDiff.map(d =>
-    '<tr><td>'+d.name+'</td><td class="num-cell">'+d.before.join(' / ')+'</td><td class="num-cell">'+d.after.join(' / ')+'</td></tr>'
-  );
-  const html = '<div class="modal-box-lg">'
-    + '<div class="modal-title-lg">Last Automatic Refresh \u2014 30 Nov 2026, 23:58</div>'
-    + '<div class="modal-sub-lg">Ran on its own, on the last day of the month \u2014 nobody triggered this.</div>'
-    + (lastRefreshDiff.staleFlags && lastRefreshDiff.staleFlags.length
-        ? '<div class="ff-note-box" style="margin-bottom:14px;"><b>Flagged during Check:</b><br>'+lastRefreshDiff.staleFlags.join('<br>')+'</div>'
-        : '')
-    + (diffRows.length
-        ? '<div class="table-card"><table><thead><tr><th>Department</th><th>Row before \u2192</th><th>Row after</th></tr></thead><tbody>'+diffRows.join('')+'</tbody></table></div>'
-        : '<div class="txn-empty">No departments changed in this refresh.</div>')
-    + '<div style="display:flex;justify-content:flex-end;gap:10px;margin-top:14px;">'
-      + '<button class="btn btn-solid" onclick="closeFfModal()">Close</button>'
-    + '</div>'
-    + '</div>';
-  showFfModal(html);
-}
-function showFfModal(innerHtml){
-  let overlay = document.getElementById('ffModalOverlay');
-  if(!overlay){
-    overlay = document.createElement('div');
-    overlay.id = 'ffModalOverlay';
-    overlay.className = 'modal-backdrop';
-    document.body.appendChild(overlay);
-  }
-  overlay.innerHTML = innerHtml;
-  overlay.classList.add('show');
-}
-function closeFfModal(){
-  const overlay = document.getElementById('ffModalOverlay');
-  if(overlay) overlay.classList.remove('show');
 }
 
 let toastTimer;
@@ -2315,6 +2248,7 @@ function showToast(msg){
 
 renderHj();
 renderFixed();
+renderUnallocated();
 runAutomaticRefresh();
 
 
@@ -2405,50 +2339,19 @@ const DEPT_COST_TABLE = [
 ];
 
 const RUN_LOG = [
-  {id:'run4', month:'November 2026', triggeredBy:'Payroll closed automatically', date:'01 Dec 2026, 06:02', sentAt:null, status:'failed', reason:'Reconciliation off by 3,240 AED \u2014 Cybersecurity\u2019s cost didn\u2019t fully allocate to a product bucket.'},
-  {id:'run3', month:'October 2026', triggeredBy:'Payroll closed automatically', date:'01 Nov 2026, 06:02', sentAt:'01 Nov 2026, 06:04', status:'success', reason:null},
-  {id:'run2', month:'September 2026', triggeredBy:'Payroll closed automatically', date:'01 Oct 2026, 06:01', sentAt:'01 Oct 2026, 06:03', status:'success', reason:null},
-  {id:'run1', month:'August 2026', triggeredBy:'Payroll closed automatically', date:'01 Sep 2026, 06:03', sentAt:'01 Sep 2026, 06:05', status:'success', reason:null},
+  {id:'run3', month:'October 2026',   types:{expat:'01 Nov 2026, 06:02', emirati:'01 Nov 2026, 06:05', obank:'01 Nov 2026, 06:09', oint:'01 Nov 2026, 06:12', all:'01 Nov 2026, 06:13'}, sentAt:'01 Nov 2026, 06:15'},
+  {id:'run2', month:'September 2026', types:{expat:'01 Oct 2026, 06:01', emirati:'01 Oct 2026, 06:04', obank:'01 Oct 2026, 06:07', oint:'01 Oct 2026, 06:10', all:'01 Oct 2026, 06:11'}, sentAt:'01 Oct 2026, 06:13'},
+  {id:'run1', month:'August 2026',    types:{expat:'01 Sep 2026, 06:03', emirati:'01 Sep 2026, 06:06', obank:'01 Sep 2026, 06:10', oint:'01 Sep 2026, 06:14', all:'01 Sep 2026, 06:15'}, sentAt:'01 Sep 2026, 06:17'},
 ];
 
 let currentCat = 'All';
 
 function renderRunLog(){
-  const latest = RUN_LOG[0];
-  const bannerEl = document.getElementById('runNotifyBanner');
-  if(bannerEl){
-    bannerEl.innerHTML = latest.status==='success'
-      ? '<div class="run-notify-banner ok">' + checkSvg() + ' Notification sent to the payroll handler \u2014 ' + latest.month + ' run succeeded.</div>'
-      : '<div class="run-notify-banner bad">\u26a0 Notification sent to the payroll handler \u2014 ' + latest.month + ' run failed. ' + latest.reason + '</div>';
-  }
   document.getElementById('runLogBody').innerHTML = RUN_LOG.map(r=>{
-    const statusHtml = r.status==='success'
-      ? '<span class="source-tag" style="background:var(--green-bg);color:var(--green-ink);">' + checkSvg() + ' Passed</span>'
-      : '<span class="source-tag" style="background:#fdeaea;color:var(--red);">Failed</span>';
-    const canRerun = r.status==='failed' && !r.sentAt;
-    const actionsHtml = '<button class="link-btn" onclick="openRunDetail(\''+r.id+'\')">View</button>'
-      + (canRerun ? '<span class="edit-again-link" onclick="reRunMonth(\''+r.id+'\')">Re-run</span>' : '');
-    return '<tr class="data-row">'
-      + '<td>'+r.month+'</td>'
-      + '<td style="color:var(--ink-soft);font-size:13px;">'+r.triggeredBy+'</td>'
-      + '<td style="font-size:13px;">'+r.date+'</td>'
-      + '<td>'+statusHtml+'</td>'
-      + '<td style="color:var(--ink-soft);font-size:12.5px;">'+(r.reason || '\u2014')+'</td>'
-      + '<td>'+actionsHtml+'</td>'
-      + '</tr>';
+    const t=r.types; const cell=v=>'<td style="font-size:12.5px;">'+v+'</td>';
+    return '<tr class="data-row"><td>'+r.month+'</td>'+cell(t.expat)+cell(t.emirati)+cell(t.obank)+cell(t.oint)+cell(t.all)
+      + '<td><button class="link-btn" onclick="openRunDetail(\''+r.id+'\')">View</button></td></tr>';
   }).join('');
-}
-function reRunMonth(runId){
-  const run = RUN_LOG.find(r=>r.id===runId);
-  if(!run || run.sentAt) return; // guardrail: never re-run something already sent to ERP
-  const now = new Date();
-  const nowStr = now.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}) + ', ' + now.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
-  run.status = 'success';
-  run.reason = null;
-  run.date = nowStr;
-  run.sentAt = nowStr;
-  renderRunLog();
-  showToast('Re-run complete \u2014 ' + run.month + ' now succeeded and sent to ERP');
 }
 function openRunDetail(runId){
   const run = RUN_LOG.find(r=>r.id===runId);
@@ -2456,7 +2359,7 @@ function openRunDetail(runId){
   currentRun = run;
   document.getElementById('runLogView').style.display = 'none';
   document.getElementById('resultsArea').style.display = 'block';
-  document.getElementById('runStatus').textContent = run.month + ' \u2014 run ' + run.date + ' (' + run.triggeredBy.toLowerCase() + ')';
+  document.getElementById('runStatus').textContent = run.month + ' \u2014 All Employees completed ' + run.types.all + ' \u00b7 sent to ERP ' + run.sentAt;
   renderCat(currentCat);
 }
 function backToRunLog(){
@@ -2555,16 +2458,14 @@ function renderCat(cat){
 
   html += renderTransactionsSection(cat);
   if(cat !== 'All'){
-    html += currentRun && currentRun.sentAt
-      ? '<div class="erp-sent-badge">' + checkSvg() + ' Sent to ERP \u2014 ' + currentRun.sentAt + '</div>'
-      : '<div class="erp-sent-badge" style="background:#fdeaea;color:var(--red);">Not sent to ERP \u2014 this run hasn\u2019t succeeded yet</div>';
+    html += '<div class="erp-sent-badge">' + checkSvg() + ' Sent to ERP \u2014 ' + currentRun.sentAt + '</div>';
   }
 
   html += '<div class="kpi-row">'
     + '<div class="kpi-card"><div class="kpi-label">Employees Priced</div><div class="kpi-value">'+r.people_priced+'</div><div class="kpi-sub">of '+totalPeople+' total on file</div></div>'
     + '<div class="kpi-card"><div class="kpi-label">Total Salary Entered</div><div class="kpi-value">'+fmtAED(r.total_salary)+'</div></div>'
     + '<div class="kpi-card"><div class="kpi-label">Allocated to Products</div><div class="kpi-value">'+fmtAED(r.allocated_to_products)+'</div><div class="kpi-sub">'+pct1(r.allocated_to_products/r.total_salary*100)+'% of total salary</div></div>'
-    + '<div class="kpi-card"><div class="kpi-label">Reconciliation</div><div class="kpi-value" style="color:'+(okDiff?'#0d7a3f':'#c0392b')+';font-size:16px;">'+(okDiff?'✓ Balances to 0.00':'⚠ '+fmtAED(r.difference)+' gap')+'</div></div>'
+    + '<div class="kpi-card"><div class="kpi-label">Not Allocated in Product</div><div class="kpi-value">'+fmtAED(r.total_salary - r.allocated_to_products)+'</div><div class="kpi-sub">'+pct1((r.total_salary - r.allocated_to_products)/r.total_salary*100)+'% of total salary</div></div>'
     + '</div>';
 
   html += '<div class="result-section-title">Cost per Bucket</div>';
@@ -2590,18 +2491,18 @@ function renderCat(cat){
   });
   html += '</tbody></table></div>';
 
-  html += '<div class="result-section-title">Reconciliation — must come to zero</div>';
+  html += '<div class="result-section-title">Reconciliation</div>';
   html += '<div class="table-card"><table class="recon-table"><tbody>';
   const reconRows = [
     ['People priced', r.people_priced, false],
     [cat==='All' ? 'People still blank' : 'People outside this category', peopleBlank, false],
     ['Total salary entered', r.total_salary, true],
     ['Allocated to products', r.allocated_to_products, true],
-    ['Founder — founders and their staff, not attributed', r.founder, true],
-    ['Own P&L — BLA, MaidMatch', r.ownpl, true],
-    ['WEEL — team not yet mapped to a product', r.weel, true],
-    ['Auditing — team not yet mapped to a product', r.auditing, true],
-    ['Unallocated — people with no department', r.unallocated, true],
+    ['Founder', r.founder, true],
+    ['Own P&L', r.ownpl, true],
+    ['WEEL', r.weel, true],
+    ['Auditing', r.auditing, true],
+    ['Unallocated', r.unallocated, true],
   ];
   reconRows.forEach(([label,val,isMoney])=>{
     html += '<tr><td>'+label+'</td><td class="num-cell">'+(isMoney?fmtAED(val):val)+'</td></tr>';
@@ -2615,26 +2516,19 @@ function renderCat(cat){
 
   document.getElementById('catBody').innerHTML = html;
 }
-function applyMinHeadcountChange(value){
-  const n = Math.max(1, parseInt(value) || 1);
-  MIN_HEADCOUNT_DEPT_COST_TABLE = n;
-  document.getElementById('minHeadcountInput').value = n;
-  showToast('Department Cost Table minimum headcount set to '+n+' \u2014 applies from the next run onward');
-}
 function renderDeptCostTable(){
-  const included = DEPT_COST_TABLE.filter(d => d.headcount >= MIN_HEADCOUNT_DEPT_COST_TABLE);
-  const excluded = DEPT_COST_TABLE.filter(d => d.headcount < MIN_HEADCOUNT_DEPT_COST_TABLE);
+  const included = DEPT_COST_TABLE.filter(d => d.headcount >= 3);
+  const small = DEPT_COST_TABLE.filter(d => d.headcount < 3);
+  const others = small.reduce((a,d)=>({headcount:a.headcount+d.headcount,total:a.total+d.total,basic:a.basic+d.basic,bonus:a.bonus+d.bonus,tech:a.tech+d.tech,op:a.op+d.op}),{headcount:0,total:0,basic:0,bonus:0,tech:0,op:0});
   let html = '<div class="result-section-title">Department Cost Table \u2014 sent to ERP separately from Transactions, All Employees only</div>';
-  html += '<div style="font-size:12.5px;color:var(--ink-soft);margin:-8px 0 12px;">One row per department, Total / Basic Salary / Bonus / Tech / Operational cost for this run. Departments with fewer than '+MIN_HEADCOUNT_DEPT_COST_TABLE+' people ('+excluded.length+' of them this run: '+excluded.map(d=>d.name).join(', ')+') are left out entirely \u2014 not merged anywhere, just absent.</div>';
-  html += '<div style="font-size:12px;color:var(--ink-soft);margin:0 0 12px;">Bonus is any Manager Note addition whose reason is specifically "Bonus" \u2014 salary adjustments, pension compensation, and every other addition/deduction type stay out of this column and are not treated as a bonus.</div>';
-  html += '<div class="table-card"><table><thead><tr><th>Department</th><th style="width:70px;">People</th><th class="num-cell" style="width:130px;">Total</th><th class="num-cell" style="width:130px;">Basic Salary</th><th class="num-cell" style="width:110px;">Bonus</th><th class="num-cell" style="width:130px;">Tech</th><th class="num-cell" style="width:130px;">Operational</th></tr></thead><tbody>';
-  included.forEach(d=>{
-    html += '<tr><td>'+d.name+'</td><td>'+d.headcount+'</td><td class="num-cell">'+fmtAED(d.total)+'</td><td class="num-cell">'+fmtAED(d.basic)+'</td><td class="num-cell">'+fmtAED(d.bonus)+'</td><td class="num-cell">'+fmtAED(d.tech)+'</td><td class="num-cell">'+fmtAED(d.op)+'</td></tr>';
-  });
+  html += '<div style="font-size:12.5px;color:var(--ink-soft);margin:-8px 0 12px;">One row per department: Total / Basic Salary / Bonus / Tech / Operational. Departments with fewer than 3 people ('+small.length+' this run: '+small.map(d=>d.name).join(', ')+') are combined into one <b>Others</b> row. The People column is shown here for reference only \u2014 it is not sent to ERP.</div>';
+  html += '<div style="font-size:12px;color:var(--ink-soft);margin:0 0 12px;">Bonus is any Manager Note addition whose reason is specifically "Bonus" \u2014 every other addition or deduction type folds into Basic Salary.</div>';
+  html += '<div class="table-card"><table><thead><tr><th>Department</th><th style="width:70px;">People <span style="font-weight:400;color:var(--ink-soft);">(not sent)</span></th><th class="num-cell" style="width:130px;">Total</th><th class="num-cell" style="width:130px;">Basic Salary</th><th class="num-cell" style="width:110px;">Bonus</th><th class="num-cell" style="width:130px;">Tech</th><th class="num-cell" style="width:130px;">Operational</th></tr></thead><tbody>';
+  const row = d => '<tr><td>'+d.name+'</td><td>'+d.headcount+'</td><td class="num-cell">'+fmtAED(d.total)+'</td><td class="num-cell">'+fmtAED(d.basic)+'</td><td class="num-cell">'+fmtAED(d.bonus)+'</td><td class="num-cell">'+fmtAED(d.tech)+'</td><td class="num-cell">'+fmtAED(d.op)+'</td></tr>';
+  included.forEach(d=>{ html += row(d); });
+  if(small.length) html += row({name:'Others <span style="font-size:11.5px;color:var(--ink-soft);">('+small.length+' departments under 3 people)</span>', ...others});
   html += '</tbody></table></div>';
-  html += currentRun && currentRun.sentAt
-    ? '<div class="erp-sent-badge">' + checkSvg() + ' Sent to ERP \u2014 ' + currentRun.sentAt + '</div>'
-    : '<div class="erp-sent-badge" style="background:#fdeaea;color:var(--red);">Not sent to ERP \u2014 this run hasn\u2019t succeeded yet</div>';
+  html += '<div class="erp-sent-badge">' + checkSvg() + ' Sent to ERP \u2014 ' + currentRun.sentAt + '</div>';
   return html;
 }
 
@@ -2643,10 +2537,6 @@ function renderDeptCostTable(){
 /* ===================== Configuration ===================== */
 
 const EXCLUDED_DEPT_NAMES = ['Maidsat Global','MaidMatch','WEEL','Auditing','Founder'];
-let MIN_HEADCOUNT_DEPT_COST_TABLE = 3;
-const PAYROLL_RUN_NOTIFY_RECIPIENTS = ['omar.youssef@maids.cc'];
-const DIGEST_RECIPIENTS = ['omar.youssef@maids.cc','mohammad.khalil@maids.cc'];
-const CLOSED_RECIPIENTS = ['omar.youssef@maids.cc','mohammad.khalil@maids.cc','ramzi@maids.cc'];
 let PRODUCT_BUCKETS = [
   ['MV — Maid Visa','Onboarding','MV — Maid Visa — Onboarding','General'],
   ['MV — Maid Visa','Ongoing','MV — Maid Visa — Ongoing','General'],
@@ -2677,105 +2567,19 @@ function renderBuckets(){
   document.getElementById('bucketRows').innerHTML = PRODUCT_BUCKETS.map(([product,stage,label,splitBy],i)=>
     '<tr><td>'+product+'</td><td>'+stage+'</td><td><input type="text" value="'+label+'" style="width:100%;border:1px solid var(--border);border-radius:6px;padding:6px 8px;font-size:13px;font-family:inherit;"></td>'
     + '<td>'+splitBy+'</td>'
-    + '<td><button class="link-btn" style="color:var(--red);background:none;border:none;font-weight:600;cursor:pointer;font-size:13px;" onclick="removeBucket('+i+')">Remove</button></td></tr>'
+    + '</tr>'
   ).join('');
 }
 
-function removeBucket(i){
-  if(!confirm('Remove "'+PRODUCT_BUCKETS[i][2]+'"? This bucket will disappear from every department\'s split — any % already assigned to it is lost, not redistributed.')) return;
-  PRODUCT_BUCKETS.splice(i,1);
-  renderBuckets();
-  showToast('Bucket removed');
-}
 
-function openAddBucketModal(mode){
-  const isProduct = mode === 'product';
-  const existingProducts = [...new Set(PRODUCT_BUCKETS.map(b=>b[0]))];
-  const html = isProduct
-    ? '<div class="modal-box">'
-      + '<div class="cfg-section-title" style="margin-bottom:14px;">Add Product</div>'
-      + '<div style="display:flex;flex-direction:column;gap:12px;">'
-        + '<div><label style="font-size:12.5px;font-weight:600;">Product name</label><input id="newProductName" type="text" class="cfg-input wide" style="width:100%;margin-top:4px;" placeholder="e.g. Corporate Cleaning"></div>'
-        + '<div><label style="font-size:12.5px;font-weight:600;">Split by</label><select id="newProductSplitBy" class="cfg-select" style="width:100%;margin-top:4px;"><option>General (no split)</option><option>Client / Maid</option></select></div>'
-        + '<div style="font-size:12px;color:var(--ink-soft);">Adds Onboarding and Ongoing stages automatically (and Client/Maid sub-stages if selected). Every existing department starts at 0% for the new bucket(s).</div>'
-      + '</div>'
-      + '<div style="display:flex;justify-content:flex-end;gap:10px;margin-top:18px;">'
-        + '<button class="btn btn-outline" onclick="closeModal()">Cancel</button>'
-        + '<button class="btn btn-solid" onclick="submitAddProduct()">Add Product</button>'
-      + '</div>'
-      + '</div>'
-    : '<div class="modal-box">'
-      + '<div class="cfg-section-title" style="margin-bottom:14px;">Add Bucket to Existing Product</div>'
-      + '<div style="display:flex;flex-direction:column;gap:12px;">'
-        + '<div><label style="font-size:12.5px;font-weight:600;">Product</label><select id="newBucketProduct" class="cfg-select" style="width:100%;margin-top:4px;">'+existingProducts.map(p=>'<option>'+p+'</option>').join('')+'</select></div>'
-        + '<div><label style="font-size:12.5px;font-weight:600;">Stage / sub-stage name</label><input id="newBucketStage" type="text" class="cfg-input wide" style="width:100%;margin-top:4px;" placeholder="e.g. Client · Renewal"></div>'
-        + '<div><label style="font-size:12.5px;font-weight:600;">Bucket label</label><input id="newBucketLabel" type="text" class="cfg-input wide" style="width:100%;margin-top:4px;" placeholder="e.g. CC Live-in — Client · Renewal"></div>'
-        + '<div><label style="font-size:12.5px;font-weight:600;">Split by</label><select id="newBucketSplitBy" class="cfg-select" style="width:100%;margin-top:4px;"><option>Client</option><option>Maid</option><option>General</option></select></div>'
-      + '</div>'
-      + '<div style="display:flex;justify-content:flex-end;gap:10px;margin-top:18px;">'
-        + '<button class="btn btn-outline" onclick="closeModal()">Cancel</button>'
-        + '<button class="btn btn-solid" onclick="submitAddBucket()">Add Bucket</button>'
-      + '</div>'
-      + '</div>';
-  showModal(html);
-}
-function showModal(innerHtml){
-  let overlay = document.getElementById('cfgModalOverlay');
-  if(!overlay){
-    overlay = document.createElement('div');
-    overlay.id = 'cfgModalOverlay';
-    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(14,23,42,.45);z-index:200;display:flex;align-items:center;justify-content:center;';
-    document.body.appendChild(overlay);
-  }
-  overlay.innerHTML = innerHtml;
-  const style = document.createElement('style');
-  style.textContent = '.modal-box{background:#fff;border-radius:14px;padding:22px;width:420px;max-width:90vw;box-shadow:0 20px 60px rgba(14,23,42,.25);}';
-  overlay.appendChild(style);
-  overlay.style.display = 'flex';
-}
-function closeModal(){
-  const overlay = document.getElementById('cfgModalOverlay');
-  if(overlay) overlay.style.display = 'none';
-}
-function submitAddProduct(){
-  const name = document.getElementById('newProductName').value.trim();
-  if(!name){ alert('Product name is required'); return; }
-  const splitBy = document.getElementById('newProductSplitBy').value;
-  if(splitBy.startsWith('General')){
-    PRODUCT_BUCKETS.push([name,'Onboarding',name+' — Onboarding','General']);
-    PRODUCT_BUCKETS.push([name,'Ongoing',name+' — Ongoing','General']);
-  } else {
-    PRODUCT_BUCKETS.push([name,'Client · Onboarding',name+' — Client · Onb','Client']);
-    PRODUCT_BUCKETS.push([name,'Client · Ongoing',name+' — Client · Ong','Client']);
-    PRODUCT_BUCKETS.push([name,'Maid · Onboarding',name+' — Maid · Onb','Maid']);
-    PRODUCT_BUCKETS.push([name,'Maid · Ongoing',name+' — Maid · Ong','Maid']);
-  }
-  closeModal();
-  renderBuckets();
-  showToast('Product added — every department now has this bucket at 0%');
-}
-function submitAddBucket(){
-  const product = document.getElementById('newBucketProduct').value;
-  const stage = document.getElementById('newBucketStage').value.trim();
-  const label = document.getElementById('newBucketLabel').value.trim();
-  const splitBy = document.getElementById('newBucketSplitBy').value;
-  if(!stage || !label){ alert('Stage and label are required'); return; }
-  PRODUCT_BUCKETS.push([product, stage, label, splitBy]);
-  closeModal();
-  renderBuckets();
-  showToast('Bucket added — every department now has it at 0%');
-}
 
 function saveConfig(){
   showToast('Configuration saved');
 }
 
 
-renderChips('hjChips', HJ_DEPTS.map(d=>d.name), true);
-renderChips('exclChips', EXCLUDED_DEPT_NAMES, true, 'excluded');
-renderChips('payrollNotifyChips', PAYROLL_RUN_NOTIFY_RECIPIENTS, true);
-renderChips('digestChips', DIGEST_RECIPIENTS, true);
-renderChips('closedChips', CLOSED_RECIPIENTS, true);
+renderChips('hjChips', HJ_DEPTS.map(d=>d.name), false);
+renderChips('exclChips', EXCLUDED_DEPT_NAMES, false, 'excluded');
 renderBuckets();
 renderRunLog();
 
