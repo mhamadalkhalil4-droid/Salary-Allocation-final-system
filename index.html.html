@@ -503,16 +503,18 @@ page{display:none;}
       <div class="mega-page" id="megapage-results">
 
       <div id="runLogView">
-        <p class="subpage-note">Results are calculated per Employee Type the moment that type's payroll closes — Expat, Emirati, Overseas – Bank, Overseas – International, each on its own. The moment the fourth finishes, All Employees is calculated automatically and only then is everything sent to ERP, together. Every month is logged here permanently.</p>
+        <p class="subpage-note">Six payrolls close each month — Expats, Emiratis, Overseas (Bank Transfers), Overseas (Money Transfer Center), and the two Final Settlement – Overseas payrolls — each on its own date. The moment one closes, its Transactions are sent to ERP. The moment the sixth closes, All Employees is calculated and the single Department Cost Table is sent. Every month is logged here permanently.</p>
                 <div class="table-card">
           <table>
             <thead>
               <tr>
                 <th>Month</th>
-                <th>Expat</th>
-                <th>Emirati</th>
-                <th>Overseas – Bank</th>
-                <th>Overseas – Intl</th>
+                <th>Expats</th>
+                <th>Emiratis</th>
+                <th>Overseas (Bank Transfers)</th>
+                <th>Overseas (Money Transfer Center)</th>
+                <th>Final Settlement – Overseas (Bank Transfers)</th>
+                <th>Final Settlement – Overseas (Money Transfer Center)</th>
                 <th>All Employees</th>
                 <th style="width:70px;">Actions</th>
               </tr>
@@ -2339,9 +2341,9 @@ const DEPT_COST_TABLE = [
 ];
 
 const RUN_LOG = [
-  {id:'run3', month:'October 2026',   types:{expat:'01 Nov 2026, 06:02', emirati:'01 Nov 2026, 06:05', obank:'01 Nov 2026, 06:09', oint:'01 Nov 2026, 06:12', all:'01 Nov 2026, 06:13'}, sentAt:'01 Nov 2026, 06:15'},
-  {id:'run2', month:'September 2026', types:{expat:'01 Oct 2026, 06:01', emirati:'01 Oct 2026, 06:04', obank:'01 Oct 2026, 06:07', oint:'01 Oct 2026, 06:10', all:'01 Oct 2026, 06:11'}, sentAt:'01 Oct 2026, 06:13'},
-  {id:'run1', month:'August 2026',    types:{expat:'01 Sep 2026, 06:03', emirati:'01 Sep 2026, 06:06', obank:'01 Sep 2026, 06:10', oint:'01 Sep 2026, 06:14', all:'01 Sep 2026, 06:15'}, sentAt:'01 Sep 2026, 06:17'},
+  {id:'run3', month:'October 2026',   types:{expat:'01 Nov 2026, 06:02', emirati:'26 Oct 2026, 06:05', obank:'01 Nov 2026, 06:09', omtc:'01 Nov 2026, 06:12', fsbank:'02 Nov 2026, 06:03', fsmtc:'02 Nov 2026, 06:07', all:'02 Nov 2026, 06:08'}, sentAt:'02 Nov 2026, 06:10'},
+  {id:'run2', month:'September 2026', types:{expat:'01 Oct 2026, 06:01', emirati:'26 Sep 2026, 06:04', obank:'01 Oct 2026, 06:07', omtc:'01 Oct 2026, 06:10', fsbank:'02 Oct 2026, 06:02', fsmtc:'02 Oct 2026, 06:05', all:'02 Oct 2026, 06:06'}, sentAt:'02 Oct 2026, 06:08'},
+  {id:'run1', month:'August 2026',    types:{expat:'01 Sep 2026, 06:03', emirati:'26 Aug 2026, 06:06', obank:'01 Sep 2026, 06:10', omtc:'01 Sep 2026, 06:14', fsbank:'02 Sep 2026, 06:04', fsmtc:'02 Sep 2026, 06:09', all:'02 Sep 2026, 06:10'}, sentAt:'02 Sep 2026, 06:12'},
 ];
 
 let currentCat = 'All';
@@ -2349,7 +2351,7 @@ let currentCat = 'All';
 function renderRunLog(){
   document.getElementById('runLogBody').innerHTML = RUN_LOG.map(r=>{
     const t=r.types; const cell=v=>'<td style="font-size:12.5px;">'+v+'</td>';
-    return '<tr class="data-row"><td>'+r.month+'</td>'+cell(t.expat)+cell(t.emirati)+cell(t.obank)+cell(t.oint)+cell(t.all)
+    return '<tr class="data-row"><td>'+r.month+'</td>'+cell(t.expat)+cell(t.emirati)+cell(t.obank)+cell(t.omtc)+cell(t.fsbank)+cell(t.fsmtc)+cell(t.all)
       + '<td><button class="link-btn" onclick="openRunDetail(\''+r.id+'\')">View</button></td></tr>';
   }).join('');
 }
@@ -2359,7 +2361,7 @@ function openRunDetail(runId){
   currentRun = run;
   document.getElementById('runLogView').style.display = 'none';
   document.getElementById('resultsArea').style.display = 'block';
-  document.getElementById('runStatus').textContent = run.month + ' \u2014 All Employees completed ' + run.types.all + ' \u00b7 sent to ERP ' + run.sentAt;
+  document.getElementById('runStatus').textContent = run.month + ' \u2014 All Employees completed ' + run.types.all + ' \u00b7 Department Cost Table sent to ERP ' + run.sentAt;
   renderCat(currentCat);
 }
 function backToRunLog(){
