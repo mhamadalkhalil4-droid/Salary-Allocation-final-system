@@ -503,7 +503,7 @@ page{display:none;}
       <div class="mega-page" id="megapage-results">
 
       <div id="runLogView">
-        <p class="subpage-note">Six payrolls close each month — Expats, Emiratis, Overseas (Bank Transfers), Overseas (Money Transfer Center), and the two Final Settlement – Overseas payrolls — each on its own date. The moment one closes, its Transactions are sent to ERP. The moment the sixth closes, All Employees is calculated and the single Department Cost Table is sent. Every month is logged here permanently.</p>
+        <p class="subpage-note">Six payrolls close each month — Expats, Emiratis, Overseas (Bank Transfers), Overseas (Money Transfer Center), and the two Final Settlement – Overseas payrolls — each on its own date. The moment one closes, its Transactions are sent to ERP. The moment the sixth closes, All Employees is calculated. The single Department Cost Table is sent on the 11th of the following month (or when the sixth closes, if later), so immediate payments from the 1st–10th are already in it. Every month is logged here permanently.</p>
                 <div class="table-card">
           <table>
             <thead>
@@ -516,6 +516,7 @@ page{display:none;}
                 <th>Final Settlement – Overseas (Bank Transfers)</th>
                 <th>Final Settlement – Overseas (Money Transfer Center)</th>
                 <th>All Employees</th>
+                <th>Cost Table sent</th>
                 <th style="width:70px;">Actions</th>
               </tr>
             </thead>
@@ -2341,9 +2342,9 @@ const DEPT_COST_TABLE = [
 ];
 
 const RUN_LOG = [
-  {id:'run3', month:'October 2026',   types:{expat:'01 Nov 2026, 06:02', emirati:'26 Oct 2026, 06:05', obank:'01 Nov 2026, 06:09', omtc:'01 Nov 2026, 06:12', fsbank:'02 Nov 2026, 06:03', fsmtc:'02 Nov 2026, 06:07', all:'02 Nov 2026, 06:08'}, sentAt:'02 Nov 2026, 06:10'},
-  {id:'run2', month:'September 2026', types:{expat:'01 Oct 2026, 06:01', emirati:'26 Sep 2026, 06:04', obank:'01 Oct 2026, 06:07', omtc:'01 Oct 2026, 06:10', fsbank:'02 Oct 2026, 06:02', fsmtc:'02 Oct 2026, 06:05', all:'02 Oct 2026, 06:06'}, sentAt:'02 Oct 2026, 06:08'},
-  {id:'run1', month:'August 2026',    types:{expat:'01 Sep 2026, 06:03', emirati:'26 Aug 2026, 06:06', obank:'01 Sep 2026, 06:10', omtc:'01 Sep 2026, 06:14', fsbank:'02 Sep 2026, 06:04', fsmtc:'02 Sep 2026, 06:09', all:'02 Sep 2026, 06:10'}, sentAt:'02 Sep 2026, 06:12'},
+  {id:'run3', month:'October 2026',   types:{expat:'01 Nov 2026, 06:02', emirati:'26 Oct 2026, 06:05', obank:'01 Nov 2026, 06:09', omtc:'01 Nov 2026, 06:12', fsbank:'02 Nov 2026, 06:03', fsmtc:'02 Nov 2026, 06:07', all:'02 Nov 2026, 06:08'}, sentAt:'11 Nov 2026, 06:00'},
+  {id:'run2', month:'September 2026', types:{expat:'01 Oct 2026, 06:01', emirati:'26 Sep 2026, 06:04', obank:'01 Oct 2026, 06:07', omtc:'01 Oct 2026, 06:10', fsbank:'02 Oct 2026, 06:02', fsmtc:'02 Oct 2026, 06:05', all:'02 Oct 2026, 06:06'}, sentAt:'11 Oct 2026, 06:00'},
+  {id:'run1', month:'August 2026',    types:{expat:'01 Sep 2026, 06:03', emirati:'26 Aug 2026, 06:06', obank:'01 Sep 2026, 06:10', omtc:'01 Sep 2026, 06:14', fsbank:'02 Sep 2026, 06:04', fsmtc:'02 Sep 2026, 06:09', all:'02 Sep 2026, 06:10'}, sentAt:'11 Sep 2026, 06:00'},
 ];
 
 let currentCat = 'All';
@@ -2351,7 +2352,7 @@ let currentCat = 'All';
 function renderRunLog(){
   document.getElementById('runLogBody').innerHTML = RUN_LOG.map(r=>{
     const t=r.types; const cell=v=>'<td style="font-size:12.5px;">'+v+'</td>';
-    return '<tr class="data-row"><td>'+r.month+'</td>'+cell(t.expat)+cell(t.emirati)+cell(t.obank)+cell(t.omtc)+cell(t.fsbank)+cell(t.fsmtc)+cell(t.all)
+    return '<tr class="data-row"><td>'+r.month+'</td>'+cell(t.expat)+cell(t.emirati)+cell(t.obank)+cell(t.omtc)+cell(t.fsbank)+cell(t.fsmtc)+cell(t.all)+cell(r.sentAt)
       + '<td><button class="link-btn" onclick="openRunDetail(\''+r.id+'\')">View</button></td></tr>';
   }).join('');
 }
