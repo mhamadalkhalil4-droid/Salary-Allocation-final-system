@@ -437,9 +437,9 @@ page{display:none;}
       <div class="mega-page" id="megapage-buckets">
 
       <div class="inner-tabs">
-        <div class="inner-tab active" id="innertab-hj" onclick="showInner('hj')">Human Judgment <span class="badge">9</span></div>
-        <div class="inner-tab" id="innertab-fixed" onclick="showInner('fixed')">Fixed <span class="badge">29</span></div>
-        <div class="inner-tab" id="innertab-formula" onclick="showInner('formula')">Formula <span class="badge">32</span></div>
+        <div class="inner-tab active" id="innertab-hj" onclick="showInner('hj')">Human Judgment <span class="badge">7</span></div>
+        <div class="inner-tab" id="innertab-fixed" onclick="showInner('fixed')">Fixed <span class="badge">35</span></div>
+        <div class="inner-tab" id="innertab-formula" onclick="showInner('formula')">Formula <span class="badge">33</span></div>
         <div class="inner-tab" id="innertab-unalloc" onclick="showInner('unalloc')">Unallocated <span class="badge" id="unallocBadge">1</span></div>
       </div>
 
@@ -469,7 +469,7 @@ page{display:none;}
         <p class="subpage-note">32 departments are worked out from Variables and Ratios — never typed by hand. Refreshed automatically, the same way payroll closes automatically — nobody clicks anything.</p>
         <div id="formulaPendingNote"></div>
         <div class="ff-toolbar">
-          <span class="ff-toolbar-note" id="formulaCount">Showing 1–32 of 32</span>
+          <span class="ff-toolbar-note" id="formulaCount">Showing 1–33 of 33</span>
           <span class="ff-toolbar-note" id="formulaRefreshStatus" style="font-weight:600;">Last refreshed: 30 Nov 2026, 23:58 (automatic, last day of the month)</span>
         </div>
         <div class="table-card">
@@ -503,7 +503,7 @@ page{display:none;}
       <div class="mega-page" id="megapage-results">
 
       <div id="runLogView">
-        <p class="subpage-note">Six payrolls close each month — Expats, Emiratis, Overseas (Bank Transfers), Overseas (Money Transfer Center), and the two Final Settlement – Overseas payrolls — each on its own date. The moment one closes, its Transactions are sent to ERP. The moment the sixth closes, All Employees is calculated. The single Department Cost Table is sent on the 11th of the following month (or when the sixth closes, if later), so immediate payments from the 1st–10th are already in it. Every month is logged here permanently.</p>
+        <p class="subpage-note">Six payrolls close each month — Expats, Emiratis, Overseas (Bank Transfers), Overseas (Money Transfer Center), and the two Final Settlement – Overseas payrolls — each on its own date. The moment one closes, its Transactions are sent to ERP. A seventh Transactions feed, Single transfers (Immediate Bonus and “Pay loan now” to-dos), is sent on the last day of the month. The moment the sixth payroll closes, All Employees is calculated. The single Department Cost Table is sent the day after the cutoff day (default the 11th) of the following month, or when the sixth closes if later.</p>
                 <div class="table-card">
           <table>
             <thead>
@@ -515,6 +515,7 @@ page{display:none;}
                 <th>Overseas (Money Transfer Center)</th>
                 <th>Final Settlement – Overseas (Bank Transfers)</th>
                 <th>Final Settlement – Overseas (Money Transfer Center)</th>
+                <th>Single transfers</th>
                 <th>All Employees</th>
                 <th>Cost Table sent</th>
                 <th style="width:70px;">Actions</th>
@@ -549,7 +550,7 @@ page{display:none;}
       <div class="cfg-section">
         <div class="cfg-section-head">
           <div class="cfg-section-title">Department Classification</div>
-          <div class="cfg-section-sub">Which of the 70 departments are set by hand, computed automatically, or excluded from product allocation entirely. Reference only — classification is changed by the data team, not from this screen.</div>
+          <div class="cfg-section-sub">Which of the 75 departments are set by hand, computed automatically, or excluded from product allocation entirely. Reference only — classification is changed by the data team, not from this screen.</div>
         </div>
         <div class="cfg-body">
           <div class="cfg-row">
@@ -561,6 +562,19 @@ page{display:none;}
             <div class="cfg-row-control"><div class="cfg-chip-list" id="exclChips"></div></div>
           </div>
           
+        </div>
+      </div>
+
+      <div class="cfg-section">
+        <div class="cfg-section-head">
+          <div class="cfg-section-title">Results</div>
+          <div class="cfg-section-sub">Immediate payments (Immediate Bonus notes and loans paid with “Pay loan now”) and the month they count in for the Department Cost Table.</div>
+        </div>
+        <div class="cfg-body">
+          <div class="cfg-row">
+            <div><div class="cfg-row-label">Immediate payment cutoff day</div><div class="cfg-row-desc">An immediate payment marked Done on or before this day of the month counts in the previous month’s Department Cost Table; after it, in that month’s. The table is sent the day after this day. Transactions are not affected.</div></div>
+            <div class="cfg-row-control"><input type="number" class="cfg-select" id="cutoffDayInput" value="10" min="1" max="28" style="width:80px;text-align:center;" onchange="applyCutoffChange(this.value)"></div>
+          </div>
         </div>
       </div>
 
@@ -861,14 +875,12 @@ const BUCKET_GROUPS = [
 // Real Oct 2026 department data
 const HJ_DEPTS = [
   {id:'hj1', name:"Marketing", pil:"Benjamin Felix Thomas", proposed:[47.5, 0, 38, 0, 4.8, 0, 9.5, 0, 0.2, 0, 0, 0, 0, 0, 0, 0]},
-  {id:'hj2', name:"Customer Experience", pil:"Aya Ibrahim Taher", proposed:[0, 0, 20.5, 20.5, 20, 20, 4.5, 4.5, 5, 5, 0, 0, 0, 0, 0, 0]},
   {id:'hj3', name:"AI Implementation", pil:"MHD Amin Mazen Aljebbeh", proposed:[15, 30, 6, 14, 6, 14, 1.5, 3.5, 1.5, 3.5, 0.5, 1, 0.5, 1, 0.6, 1.4]},
   {id:'hj4', name:"R&D", pil:"Ali Hisham Hamdar", proposed:[13.5, 31.5, 6, 14, 6, 14, 1.5, 3.5, 1.5, 3.5, 0.5, 1, 0.5, 1, 0.6, 1.4]},
   {id:'hj5', name:"Data Analytics and Reporting", pil:"Chady Younan", proposed:[13.5, 31.5, 6, 14, 6, 14, 1.5, 3.5, 1.5, 3.5, 0.45, 1.05, 0.45, 1.05, 0.6, 1.4]},
   {id:'hj6', name:"CEO", pil:"Mario Andre Gharios", proposed:[13.5, 31.5, 6, 14, 6, 14, 1.5, 3.5, 1.5, 3.5, 0.5, 1, 0.5, 1, 0.6, 1.4]},
-  {id:'hj7', name:"Accommodation Management", pil:"Jessica Joao Abdallah", proposed:[0.0, 0.0, 0.0, 0.0, 23.55, 70, 0.0, 0.0, 5.85, 0.0, 0.0, 0.0, 0.6, 0.0, 0.0, 0.0]},
+  {id:'hj7', name:"Accommodation Management", pil:"Jessica Joao Abdallah", proposed:[0, 0, 0, 0, 21, 70, 0, 0, 7.2, 0, 0, 0, 1.8, 0, 0, 0]},
   {id:'hj8', name:"Other Nationalities", pil:"Diptankar - Bhattacharya", proposed:[0.0, 0.0, 10.0, 10.0, 70, 10.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]},
-  {id:'hj9', name:"Chatbot & LLM Development", pil:"Sulaiman Imad Aldeen Almoghrabi", proposed:[15.2, 22.8, 13.12, 19.68, 8.01, 8.01, 2.88, 4.32, 1.99, 1.99, 0.0, 0.0, 0.0, 0.0, 0.8, 1.2]},
 ];
 HJ_DEPTS.forEach(r => { r.savedProposed = r.name==='AI Implementation' ? [13.5,31.5,6,14,6,14,1.5,3.5,1.5,3.5,0.5,1,0.5,1,0.6,1.4] : [...r.proposed]; });
 function exportAllocationWorkbook(){
@@ -887,6 +899,8 @@ function exportAllocationWorkbook(){
   XLSX.writeFile(wb, 'Cost_Allocation_Export.xlsx'); showToast('Exported \u2014 Variables, Ratios, and all 70 department rows');
 }
 const HJ_DEADLINE_DAY = 30;
+let CUTOFF_DAY = 10;
+function applyCutoffChange(v){ const n=Math.min(28,Math.max(1,parseInt(v)||10)); CUTOFF_DAY=n; document.getElementById('cutoffDayInput').value=n; showToast('Immediate payment cutoff set to day '+n+' \u2014 the Department Cost Table will be sent on day '+(n+1)); }
 const UNALLOCATED_DEPTS = [ {name:'Fleet Operations', headcount:4} ];
 function renderUnallocated(){
   const b=document.getElementById('unallocBadge'); if(b) b.textContent=UNALLOCATED_DEPTS.length;
@@ -985,6 +999,12 @@ const FIXED_DEPTS = [
   {name:"Customer Operations Excellence", kind:"flat", proposed:[6.25, 6.25, 6.25, 6.25, 6.25, 6.25, 6.25, 6.25, 6.25, 6.25, 6.25, 6.25, 6.25, 6.25, 6.25, 6.25]},
   {name:"AI Center of Excellence", kind:"flat", proposed:[6.25, 6.25, 6.25, 6.25, 6.25, 6.25, 6.25, 6.25, 6.25, 6.25, 6.25, 6.25, 6.25, 6.25, 6.25, 6.25]},
   {name:"Jira Administration", kind:"flat", proposed:[6.25, 6.25, 6.25, 6.25, 6.25, 6.25, 6.25, 6.25, 6.25, 6.25, 6.25, 6.25, 6.25, 6.25, 6.25, 6.25]},
+  {name:"Customer Experience", kind:"flat", proposed:[6.25, 6.25, 6.25, 6.25, 6.25, 6.25, 6.25, 6.25, 6.25, 6.25, 6.25, 6.25, 6.25, 6.25, 6.25, 6.25]},
+  {name:"Interdepartmental Communication", kind:"flat", proposed:[6.25, 6.25, 6.25, 6.25, 6.25, 6.25, 6.25, 6.25, 6.25, 6.25, 6.25, 6.25, 6.25, 6.25, 6.25, 6.25]},
+  {name:"Up-selling", kind:"single", proposed:[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 100, 0, 0, 0, 0, 0]},
+  {name:"Cross-selling", kind:"typed", proposed:[50, 0, 25, 0, 0, 0, 25, 0, 0, 0, 0, 0, 0, 0, 0, 0]},
+  {name:"Kiosk Promoters", kind:"typed", proposed:[47.5, 0, 38, 0, 4.8, 0, 9.5, 0, 0.2, 0, 0, 0, 0, 0, 0, 0]},
+  {name:"Retail", kind:"typed", proposed:[47.5, 0, 38, 0, 4.8, 0, 9.5, 0, 0.2, 0, 0, 0, 0, 0, 0, 0]},
   {name:"MaidMatch", kind:"zero", proposed:[0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]},
   {name:"Founder", kind:"zero", proposed:[0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]},
   {name:"Maidsat Global", kind:"zero", proposed:[0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]},
@@ -1019,6 +1039,7 @@ const FORMULA_DEPTS = [
   {name:"DDC", uses:"R13 + R2 + R9", desc:"MV vs CC by R13 (measured from sales), CC half by R2, MV half gives Travel Assist a slice via R9. All onboarding, no Part Time.", pending:false, proposed:[49.69, 0.0, 37.06, 0.0, 0.0, 0.0, 12.28, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.97, 0.0]},
   {name:"Visa", uses:"R14 + R9 + R8", desc:"Split by visa case mix (initial/renewal \u00d7 own/sourced maid). Initial \u2192 onboarding, renewal \u2192 ongoing. Own maid \u2192 MV/TA columns, sourced maid \u2192 maid columns only.", pending:false, proposed:[22.43, 12.8, 0.0, 0.0, 47.83, 2.5, 0.0, 0.0, 11.86, 0.62, 0.0, 0.0, 1.22, 0.06, 0.43, 0.25]},
   {name:"Taxi Logistics", uses:"R11", desc:"Transport is a maid cost. MV lands on MV_ONG since the maid is the client there.", pending:false, proposed:[0.0, 11.31, 0.0, 0.0, 0.0, 60.96, 0.0, 0.0, 0.0, 27.73, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]},
+  {name:"Chatbot & LLM Development", uses:"Jira chatbot requests per product (placeholder)", desc:"Placeholder: will be allocated by chatbot requests handled per product, counted in Jira. The Jira fields are being added with the Jira development team. Until then this row keeps today\u2019s numbers. Responsible: MHD Amin Mazen Aljebbeh.", exampleStatus:"placeholder", exampleNote:"Placeholder row \u2014 the Jira-based formula is not live yet. Responsible for the Jira mapping and for confirming these numbers: MHD Amin Mazen Aljebbeh.", pending:false, proposed:[15.2, 22.8, 13.12, 19.68, 8.01, 8.01, 2.88, 4.32, 1.99, 1.99, 0, 0, 0, 0, 0.8, 1.2]},
   {name:"Broadcasting", uses:"V23 + R1 + R3 + R12 + R9", desc:"Split by audience team, each lands by its matching ratio, MV gives Travel Assist a slice via R9.", exampleStatus:"current", exampleNote:"Worked example, not a saved row. Computed from the 25 Aug data so a builder can test their implementation against something \u2014 the refresh overwrites it. Built from R1, R3, R12, R9, none of which depend on V20, so this row stays current regardless of V20\u2019s value.", pending:false, proposed:[2.78, 14.84, 12.03, 6.59, 6.30, 36.79, 2.64, 1.45, 0.33, 9.14, 0.19, 2.91, 0.02, 2.52, 0.23, 1.24]},
   {name:"Ziwo", uses:"V22 + R7 + R9", desc:"Split by who was on the phone and which team was calling, weighted by talk time. Team is inferred from the agent's usual pattern when blank (76% of calls carry no team).", exampleStatus:"current", exampleNote:"Worked example, not a saved row. Real computed row, verified to total exactly 100.00, weighted by talk time over the last 12 months. Coverage: 32,955 customer talk-hours in the window, 32,126 placed by direct evidence (97.5%); the remaining 829 hours (unidentified outbound calls) are spread across the placed buckets in proportion, the same rule every list variable follows. A further 186 hours of internal/eavesdrop calls are excluded as not customer work. Closed.", pending:false, proposed:[12.48, 12.70, 9.31, 34.70, 1.54, 10.64, 3.08, 7.06, 0.65, 6.94, 0, 0.36, 0, 0, 0.24, 0.30]},
   {name:"ChatCC", uses:"V21 + R2 + R1 + R12 + R7 + R9", desc:"Split by who was on the other end and which department handled it, with the product read off the person's own record.", exampleStatus:"current", exampleNote:"Worked example, not a saved row. Real computed row, totals exactly 100.00, from the last 12 months of CHATCC_SILVER.CC_CONVERSATIONS. Coverage: 6,695,042 conversations in the window, 6,689,604 placed by direct evidence (99.92%); 5,422,506 carried a department, 1,215,000 more placed through their skill or counterparty. The remaining 5,438 (0.08%) are spread across the placed buckets in proportion. Closed.", pending:false, proposed:[3.10, 26.04, 6.35, 7.60, 21.44, 12.22, 2.10, 2.04, 9.06, 6.21, 0.72, 1.39, 0, 1.15, 0.06, 0.52]},
@@ -1134,6 +1155,7 @@ function renderFixed(){
     const total = sumArr(d.proposed);
     const why = d.kind==='flat' ? 'Serves the whole business with no preference \u2014 cost spreads evenly (S17)'
       : d.kind==='zero' ? 'No allocation \u2014 exists so people can belong to it; cost is reported, not lost'
+      : d.kind==='typed' ? 'Set as typed \u2014 a row agreed once with the business; changes only if the business decides'
       : 'Serves one product, one stage, one side \u2014 there is only one place this cost can go';
     let rows = '<tr class="data-row">'
       + '<td>'+d.name+'</td>'
@@ -2178,6 +2200,7 @@ function renderFormula(){
     if(d.exampleStatus === 'current') statusTag = ' <span class="source-tag" style="margin-left:6px;background:#e7f0ff;color:#1d4ed8;">worked example</span>';
     else if(d.exampleStatus === 'stale') statusTag = ' <span class="source-tag" style="margin-left:6px;background:#fef3c7;color:#92400d;">worked example \u2014 stale</span>';
     else if(d.exampleStatus === 'none') statusTag = ' <span class="source-tag" style="margin-left:6px;background:#fdeaea;color:var(--red);">no example</span>';
+    else if(d.exampleStatus === 'placeholder') statusTag = ' <span class="source-tag" style="margin-left:6px;background:#fef3c7;color:#92400d;">placeholder \u00b7 responsible: MHD Amin Mazen Aljebbeh</span>';
     let rows = '<tr class="data-row">'
       + '<td>'+d.name+statusTag+'</td>'
       + '<td style="color:var(--ink-soft);font-size:12.5px;">'+landsOn(d.proposed)+'</td>'
@@ -2186,8 +2209,8 @@ function renderFormula(){
       + '<td><button class="link-btn" onclick="toggleFormulaEdit('+i+')">View</button></td>'
       + '</tr>';
     if(formulaOpenIndex === i){
-      const noteBg = d.exampleStatus==='stale' ? '#fef3c7' : d.exampleStatus==='none' ? '#fdeaea' : d.exampleStatus==='current' ? '#e7f0ff' : null;
-      const noteColor = d.exampleStatus==='stale' ? '#92400d' : d.exampleStatus==='none' ? 'var(--red)' : d.exampleStatus==='current' ? '#1d4ed8' : null;
+      const noteBg = (d.exampleStatus==='stale'||d.exampleStatus==='placeholder') ? '#fef3c7' : d.exampleStatus==='none' ? '#fdeaea' : d.exampleStatus==='current' ? '#e7f0ff' : null;
+      const noteColor = (d.exampleStatus==='stale'||d.exampleStatus==='placeholder') ? '#92400d' : d.exampleStatus==='none' ? 'var(--red)' : d.exampleStatus==='current' ? '#1d4ed8' : null;
       rows += '<tr class="ff-detail-row"><td colspan="5">'
         + '<div class="dept-info-panel">'
           + '<div class="dept-info-row"><span class="dept-info-label">Lands on</span><span class="dept-info-value">'+landsOn(d.proposed)+'</span></div>'
@@ -2342,9 +2365,9 @@ const DEPT_COST_TABLE = [
 ];
 
 const RUN_LOG = [
-  {id:'run3', month:'October 2026',   types:{expat:'01 Nov 2026, 06:02', emirati:'26 Oct 2026, 06:05', obank:'01 Nov 2026, 06:09', omtc:'01 Nov 2026, 06:12', fsbank:'02 Nov 2026, 06:03', fsmtc:'02 Nov 2026, 06:07', all:'02 Nov 2026, 06:08'}, sentAt:'11 Nov 2026, 06:00'},
-  {id:'run2', month:'September 2026', types:{expat:'01 Oct 2026, 06:01', emirati:'26 Sep 2026, 06:04', obank:'01 Oct 2026, 06:07', omtc:'01 Oct 2026, 06:10', fsbank:'02 Oct 2026, 06:02', fsmtc:'02 Oct 2026, 06:05', all:'02 Oct 2026, 06:06'}, sentAt:'11 Oct 2026, 06:00'},
-  {id:'run1', month:'August 2026',    types:{expat:'01 Sep 2026, 06:03', emirati:'26 Aug 2026, 06:06', obank:'01 Sep 2026, 06:10', omtc:'01 Sep 2026, 06:14', fsbank:'02 Sep 2026, 06:04', fsmtc:'02 Sep 2026, 06:09', all:'02 Sep 2026, 06:10'}, sentAt:'11 Sep 2026, 06:00'},
+  {id:'run3', month:'October 2026',   types:{expat:'01 Nov 2026, 06:02', emirati:'26 Oct 2026, 06:05', obank:'01 Nov 2026, 06:09', omtc:'01 Nov 2026, 06:12', fsbank:'02 Nov 2026, 06:03', fsmtc:'02 Nov 2026, 06:07', single:'31 Oct 2026, 23:59', all:'02 Nov 2026, 06:08'}, sentAt:'11 Nov 2026, 06:00'},
+  {id:'run2', month:'September 2026', types:{expat:'01 Oct 2026, 06:01', emirati:'26 Sep 2026, 06:04', obank:'01 Oct 2026, 06:07', omtc:'01 Oct 2026, 06:10', fsbank:'02 Oct 2026, 06:02', fsmtc:'02 Oct 2026, 06:05', single:'30 Sep 2026, 23:59', all:'02 Oct 2026, 06:06'}, sentAt:'11 Oct 2026, 06:00'},
+  {id:'run1', month:'August 2026',    types:{expat:'01 Sep 2026, 06:03', emirati:'26 Aug 2026, 06:06', obank:'01 Sep 2026, 06:10', omtc:'01 Sep 2026, 06:14', fsbank:'02 Sep 2026, 06:04', fsmtc:'02 Sep 2026, 06:09', single:'31 Aug 2026, 23:59', all:'02 Sep 2026, 06:10'}, sentAt:'11 Sep 2026, 06:00'},
 ];
 
 let currentCat = 'All';
@@ -2352,7 +2375,7 @@ let currentCat = 'All';
 function renderRunLog(){
   document.getElementById('runLogBody').innerHTML = RUN_LOG.map(r=>{
     const t=r.types; const cell=v=>'<td style="font-size:12.5px;">'+v+'</td>';
-    return '<tr class="data-row"><td>'+r.month+'</td>'+cell(t.expat)+cell(t.emirati)+cell(t.obank)+cell(t.omtc)+cell(t.fsbank)+cell(t.fsmtc)+cell(t.all)+cell(r.sentAt)
+    return '<tr class="data-row"><td>'+r.month+'</td>'+cell(t.expat)+cell(t.emirati)+cell(t.obank)+cell(t.omtc)+cell(t.fsbank)+cell(t.fsmtc)+cell(t.single)+cell(t.all)+cell(r.sentAt)
       + '<td><button class="link-btn" onclick="openRunDetail(\''+r.id+'\')">View</button></td></tr>';
   }).join('');
 }
@@ -2524,10 +2547,10 @@ function renderDeptCostTable(){
   const small = DEPT_COST_TABLE.filter(d => d.headcount < 3);
   const others = small.reduce((a,d)=>({headcount:a.headcount+d.headcount,total:a.total+d.total,basic:a.basic+d.basic,bonus:a.bonus+d.bonus,tech:a.tech+d.tech,op:a.op+d.op}),{headcount:0,total:0,basic:0,bonus:0,tech:0,op:0});
   let html = '<div class="result-section-title">Department Cost Table \u2014 sent to ERP separately from Transactions, All Employees only</div>';
-  html += '<div style="font-size:12.5px;color:var(--ink-soft);margin:-8px 0 12px;">One row per department: Total / Basic Salary / Bonus / Tech / Operational. Departments with fewer than 3 people ('+small.length+' this run: '+small.map(d=>d.name).join(', ')+') are combined into one <b>Others</b> row. The People column is shown here for reference only \u2014 it is not sent to ERP.</div>';
-  html += '<div style="font-size:12px;color:var(--ink-soft);margin:0 0 12px;">Bonus is any Manager Note addition whose reason is specifically "Bonus" \u2014 every other addition or deduction type folds into Basic Salary.</div>';
-  html += '<div class="table-card"><table><thead><tr><th>Department</th><th style="width:70px;">People <span style="font-weight:400;color:var(--ink-soft);">(not sent)</span></th><th class="num-cell" style="width:130px;">Total</th><th class="num-cell" style="width:130px;">Basic Salary</th><th class="num-cell" style="width:110px;">Bonus</th><th class="num-cell" style="width:130px;">Tech</th><th class="num-cell" style="width:130px;">Operational</th></tr></thead><tbody>';
-  const row = d => '<tr><td>'+d.name+'</td><td>'+d.headcount+'</td><td class="num-cell">'+fmtAED(d.total)+'</td><td class="num-cell">'+fmtAED(d.basic)+'</td><td class="num-cell">'+fmtAED(d.bonus)+'</td><td class="num-cell">'+fmtAED(d.tech)+'</td><td class="num-cell">'+fmtAED(d.op)+'</td></tr>';
+  html += '<div style="font-size:12.5px;color:var(--ink-soft);margin:-8px 0 12px;">One row per department: Total / Bonus / Tech / Operational. Basic salary is not sent. Departments with fewer than 3 people ('+small.length+' this run: '+small.map(d=>d.name).join(', ')+') are combined into one <b>Others</b> row. The People column is shown here for reference only \u2014 it is not sent to ERP.</div>';
+  html += '<div style="font-size:12px;color:var(--ink-soft);margin:0 0 12px;">Bonus is Manager Note additions whose reason is "Bonus" plus Immediate Bonus. Everything else, including every loan, is in Total only.</div>';
+  html += '<div class="table-card"><table><thead><tr><th>Department</th><th style="width:70px;">People <span style="font-weight:400;color:var(--ink-soft);">(not sent)</span></th><th class="num-cell" style="width:140px;">Total</th><th class="num-cell" style="width:120px;">Bonus</th><th class="num-cell" style="width:130px;">Tech</th><th class="num-cell" style="width:130px;">Operational</th></tr></thead><tbody>';
+  const row = d => '<tr><td>'+d.name+'</td><td>'+d.headcount+'</td><td class="num-cell">'+fmtAED(d.total)+'</td><td class="num-cell">'+fmtAED(d.bonus)+'</td><td class="num-cell">'+fmtAED(d.tech)+'</td><td class="num-cell">'+fmtAED(d.op)+'</td></tr>';
   included.forEach(d=>{ html += row(d); });
   if(small.length) html += row({name:'Others <span style="font-size:11.5px;color:var(--ink-soft);">('+small.length+' departments under 3 people)</span>', ...others});
   html += '</tbody></table></div>';
